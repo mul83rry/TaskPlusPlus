@@ -9,8 +9,9 @@ namespace CourseLibrary.API.Services
     public interface ICourseLibraryRepository
     {
         Task<Tuple<bool, string>> Signup(string firstName, string lastName, string phoneNumber);
+        Task<Tuple<bool, string>> Signin(string phoneNumber);
 
-        IEnumerable<JObject> GetBoards(string accessToken);
+        Task<string> GetBoards(string accessToken);
         Task<bool> AddBoard(string accessToken, string caption);
         Task<bool> UpdateBoard(string accessToken, Guid boardId);
         Task<bool> DeleteBoard(string accessToken, Guid boardId);

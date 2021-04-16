@@ -26,23 +26,23 @@ namespace CourseLibrary.API.Services
             }
         }
 
-        private Session GetUser(string accessToken)
+        private async Task<Session> GetUser(string accessToken)
         {
             if (string.IsNullOrEmpty(accessToken))
             {
                 throw new ArgumentNullException(nameof(accessToken));
             }
 
-            var user = _context.Sessions.SingleOrDefault(s => s.AccessToken == accessToken);
+            var user = await _context.Sessions.SingleOrDefaultAsync(s => s.AccessToken == accessToken);
             if (user == null)
                 throw new ArgumentNullException(nameof(user));
 
             return user;
         }
 
-        public IEnumerable<JObject> GetBoards(string accessToken)
+        public async Task<string> GetBoards(string accessToken)
         {
-            var user = GetUser(accessToken);
+            var user = await GetUser(accessToken);
 
             var res = from board in _context.Boards
                       join sharedBoard in _context.SharedBoards
@@ -56,21 +56,23 @@ namespace CourseLibrary.API.Services
                           board.CreationAt
                       };
 
+            var jsonData = new JArray();
             foreach (var item in res)
             {
-                yield return new JObject
+                jsonData.Add(new JObject
                 {
                     {"id", item.Id },
                     {"creaotrId",  item.CreatorId },
                     {"caption",  item.Caption },
                     {"creationAt",  item.CreationAt }
-                };
+                });
             }
+            return jsonData.ToString();
         }
 
         public async Task<bool> AddBoard(string accessToken, string caption)
         {
-            var user = GetUser(accessToken);
+            var user = await GetUser(accessToken);
 
             var board = new Board()
             {
@@ -93,7 +95,7 @@ namespace CourseLibrary.API.Services
 
         public async Task<bool> UpdateBoard(string accessToken, Guid boardId)
         {
-            var user = GetUser(accessToken);
+            var user = await GetUser(accessToken);
 
             var found = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
             if (found != null)
@@ -111,7 +113,7 @@ namespace CourseLibrary.API.Services
 
         public async Task<bool> DeleteBoard(string accessToken, Guid boardId)
         {
-            var user = GetUser(accessToken);
+            var user = await GetUser(accessToken);
 
             var found = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
             if (found != null)
@@ -127,9 +129,26 @@ namespace CourseLibrary.API.Services
             return false;
         }
 
+        public async Task<Tuple<bool, string>> Signin(string phoneNumber) // todo: edit need
+        {
+            if (! await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
+                return new Tuple<bool, string>(false, string.Empty);
+
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+            if (user == null) return new Tuple<bool, string>(false, string.Empty);
+            
+            // save new session
+            var session = new Session()
+            {
+                IsValid = true,
+                UserId = user.Id
+            };
+
+            return new Tuple<bool, string>(true, session.AccessToken);
+        }
         public async Task<Tuple<bool, string>> Signup(string firstName, string lastName, string phoneNumber)
         {
-            if (_context.Users.Any(u => u.PhoneNumber == phoneNumber))
+            if (! await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
                 return new Tuple<bool, string>(false, string.Empty);
 
             var newUser = new User()
@@ -151,9 +170,9 @@ namespace CourseLibrary.API.Services
             return new Tuple<bool, string>(true, session.AccessToken);
         }
 
-        public IEnumerable<JObject> GetTasks(string accessToken, Guid parentId)
+        public async Task<string> GetTasks(string accessToken, Guid parentId)
         {
-            var user = GetUser(accessToken);
+            var user = await GetUser(accessToken);
 
             var res = from task in _context.Tasks
                       .Where(t => t.ParentId == parentId && !t.Deleted).OrderBy(t => t.CreationAt)
@@ -165,21 +184,23 @@ namespace CourseLibrary.API.Services
                           task.CreationAt
                       };
 
+            var jsonData = new JArray();
             foreach (var item in res)
             {
-                yield return new JObject
+                jsonData.Add(new JObject
                 {
                     {"id", item.Id },
                     {"caption",  item.Caption },
                     {"star",  item.Star },
                     {"creationAt",  item.CreationAt }
-                };
+                });
             }
+            return jsonData.ToString();
         }
 
         public async Task<bool> AddTask(string accessToken, Guid parentId, string caption)
         {
-            var user = GetUser(accessToken);
+            var user = await GetUser(accessToken);
 
             var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == parentId);
             if (board == null) return false;
@@ -224,7 +245,7 @@ namespace CourseLibrary.API.Services
 
         public async Task<bool> AddSubTask(string accessToken, Guid parentId, string caption)
         {
-            var user = GetUser(accessToken);
+            var user = await GetUser(accessToken);
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return false;
@@ -245,7 +266,7 @@ namespace CourseLibrary.API.Services
 
         public async Task<bool> EditTask(string accessToken, Guid parentId, string caption)
         {
-            var user = GetUser(accessToken);
+            var user = await GetUser(accessToken);
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return false;
@@ -263,7 +284,7 @@ namespace CourseLibrary.API.Services
 
         public async Task<bool> EditSubTask(string accessToken, Guid parentId, string caption)
         {
-            var user = GetUser(accessToken);
+            var user = await GetUser(accessToken);
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return false;
