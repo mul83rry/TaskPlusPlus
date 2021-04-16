@@ -15,8 +15,8 @@ namespace CourseLibrary.API.Services
         Task<bool> AddBoard(string accessToken, string caption);
         Task<bool> UpdateBoard(string accessToken, Guid boardId);
         Task<bool> DeleteBoard(string accessToken, Guid boardId);
-        
-        IEnumerable<JObject> GetTasks(string accessToken, Guid parentId);
+
+        Task<string> GetTasks(string accessToken, Guid parentId);
         Task<bool> AddTask(string accessToken, Guid parentId, string caption);
         Task<bool> EditTask(string accessToken, Guid parentId, string caption);
         Task<bool> AddSubTask(string accessToken, Guid parentId, string caption);
