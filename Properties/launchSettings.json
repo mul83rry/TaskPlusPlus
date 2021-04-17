@@ -2,6 +2,10 @@
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
+    "iis": {
+      "applicationUrl": "http://localhost/TaskPlusPlus.API",
+      "sslPort": 0
+    },
     "iisExpress": {
       "applicationUrl": "http://localhost:33364",
       "sslPort": 0
@@ -10,7 +14,8 @@
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
     "IIS Express": {
-      "commandName": "Project",
+      "commandName": "IISExpress",
+      "launchBrowser": true,
       "launchUrl": "weatherforecast",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

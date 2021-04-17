@@ -1,26 +1,23 @@
-﻿using TaskPlusPlus.API.Entities;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace TaskPlusPlus.API.Services
 {
     public interface ITaskPlusPlusRepository
     {
-        Task<Tuple<bool, string>> Signup(string firstName, string lastName, string phoneNumber);
-        Task<Tuple<bool, string>> Signin(string phoneNumber);
+        Task<Tuple<bool, string>> SignupAsync(string firstName, string lastName, string phoneNumber);
+        Task<Tuple<bool, string>> SigninAsync(string phoneNumber);
 
-        Task<string> GetBoards(string accessToken);
-        Task<bool> AddBoard(string accessToken, string caption);
-        Task<bool> UpdateBoard(string accessToken, Guid boardId);
-        Task<bool> DeleteBoard(string accessToken, Guid boardId);
+        Task<string> GetBoardsAsync(string accessToken);
+        Task<bool> AddBoardAsync(string accessToken, string caption);
+        Task<bool> UpdateBoardAsync(string accessToken, Guid boardId);
+        Task<bool> DeleteBoardAsync(string accessToken, Guid boardId);
 
-        Task<string> GetTasks(string accessToken, Guid parentId);
-        Task<bool> AddTask(string accessToken, Guid parentId, string caption);
-        Task<bool> EditTask(string accessToken, Guid parentId, string caption);
-        Task<bool> AddSubTask(string accessToken, Guid parentId, string caption);
-        Task<bool> EditSubTask(string accessToken, Guid parentId, string caption);
+        Task<string> GetTasksAsync(string accessToken, Guid parentId);
+        Task<bool> AddTaskAsync(string accessToken, Guid parentId, string caption);
+        Task<bool> EditTaskAsync(string accessToken, Guid parentId, string caption);
+        Task<bool> AddSubTaskAsync(string accessToken, Guid parentId, string caption);
+        Task<bool> EditSubTaskAsync(string accessToken, Guid parentId, string caption);
 
 
     }

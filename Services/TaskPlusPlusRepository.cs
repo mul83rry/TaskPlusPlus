@@ -11,8 +11,13 @@ namespace TaskPlusPlus.API.Services
 {
     public class TaskPlusPlusRepository : ITaskPlusPlusRepository, IDisposable
     {
-        private readonly TaskPlusPlusContext _context;
-        
+        private TaskPlusPlusContext _context;
+
+        public TaskPlusPlusRepository(TaskPlusPlusContext context)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -22,11 +27,15 @@ namespace TaskPlusPlus.API.Services
         {
             if (disposing)
             {
-                // dispose resources when needed
+                if (_context != null)
+                {
+                    _context.Dispose();
+                    _context = null;
+                }
             }
         }
 
-        private async Task<Session> GetUser(string accessToken)
+        private async Task<Session> GetUserAsync(string accessToken)
         {
             if (string.IsNullOrEmpty(accessToken))
             {
@@ -40,9 +49,9 @@ namespace TaskPlusPlus.API.Services
             return user;
         }
 
-        public async Task<string> GetBoards(string accessToken)
+        public async Task<string> GetBoardsAsync(string accessToken)
         {
-            var user = await GetUser(accessToken);
+            var user = await GetUserAsync(accessToken);
 
             var res = from board in _context.Boards
                       join sharedBoard in _context.SharedBoards
@@ -70,9 +79,9 @@ namespace TaskPlusPlus.API.Services
             return jsonData.ToString();
         }
 
-        public async Task<bool> AddBoard(string accessToken, string caption)
+        public async Task<bool> AddBoardAsync(string accessToken, string caption)
         {
-            var user = await GetUser(accessToken);
+            var user = await GetUserAsync(accessToken);
 
             var board = new Board()
             {
@@ -93,9 +102,9 @@ namespace TaskPlusPlus.API.Services
             return true;
         }
 
-        public async Task<bool> UpdateBoard(string accessToken, Guid boardId)
+        public async Task<bool> UpdateBoardAsync(string accessToken, Guid boardId)
         {
-            var user = await GetUser(accessToken);
+            var user = await GetUserAsync(accessToken);
 
             var found = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
             if (found != null)
@@ -111,9 +120,9 @@ namespace TaskPlusPlus.API.Services
             return false;
         }
 
-        public async Task<bool> DeleteBoard(string accessToken, Guid boardId)
+        public async Task<bool> DeleteBoardAsync(string accessToken, Guid boardId)
         {
-            var user = await GetUser(accessToken);
+            var user = await GetUserAsync(accessToken);
 
             var found = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
             if (found != null)
@@ -129,14 +138,14 @@ namespace TaskPlusPlus.API.Services
             return false;
         }
 
-        public async Task<Tuple<bool, string>> Signin(string phoneNumber) // todo: edit need
+        public async Task<Tuple<bool, string>> SigninAsync(string phoneNumber) // todo: edit need
         {
-            if (! await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
+            if (!await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
                 return new Tuple<bool, string>(false, string.Empty);
 
             var user = await _context.Users.SingleOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
             if (user == null) return new Tuple<bool, string>(false, string.Empty);
-            
+
             // save new session
             var session = new Session()
             {
@@ -146,9 +155,9 @@ namespace TaskPlusPlus.API.Services
 
             return new Tuple<bool, string>(true, session.AccessToken);
         }
-        public async Task<Tuple<bool, string>> Signup(string firstName, string lastName, string phoneNumber)
+        public async Task<Tuple<bool, string>> SignupAsync(string firstName, string lastName, string phoneNumber)
         {
-            if (! await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
+            if (!await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
                 return new Tuple<bool, string>(false, string.Empty);
 
             var newUser = new User()
@@ -170,9 +179,9 @@ namespace TaskPlusPlus.API.Services
             return new Tuple<bool, string>(true, session.AccessToken);
         }
 
-        public async Task<string> GetTasks(string accessToken, Guid parentId)
+        public async Task<string> GetTasksAsync(string accessToken, Guid parentId)
         {
-            var user = await GetUser(accessToken);
+            var user = await GetUserAsync(accessToken);
 
             var res = from task in _context.Tasks
                       .Where(t => t.ParentId == parentId && !t.Deleted).OrderBy(t => t.CreationAt)
@@ -198,9 +207,9 @@ namespace TaskPlusPlus.API.Services
             return jsonData.ToString();
         }
 
-        public async Task<bool> AddTask(string accessToken, Guid parentId, string caption)
+        public async Task<bool> AddTaskAsync(string accessToken, Guid parentId, string caption)
         {
-            var user = await GetUser(accessToken);
+            var user = await GetUserAsync(accessToken);
 
             var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == parentId);
             if (board == null) return false;
@@ -221,7 +230,7 @@ namespace TaskPlusPlus.API.Services
             return true;
         }
 
-        private async Task<bool> HaveAccessToSubTask(Guid parentId)
+        private async Task<bool> HaveAccessToSubTaskAsync(Guid parentId)
         {
             // todo: find first subtask, find task, check accessibility
             var pId = parentId;
@@ -243,14 +252,14 @@ namespace TaskPlusPlus.API.Services
             return true;
         }
 
-        public async Task<bool> AddSubTask(string accessToken, Guid parentId, string caption)
+        public async Task<bool> AddSubTaskAsync(string accessToken, Guid parentId, string caption)
         {
-            var user = await GetUser(accessToken);
+            var user = await GetUserAsync(accessToken);
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return false;
 
-            if (await HaveAccessToSubTask(parentId) == false) return false;
+            if (await HaveAccessToSubTaskAsync(parentId) == false) return false;
 
             var subTask = new Entities.Task()
             {
@@ -264,9 +273,9 @@ namespace TaskPlusPlus.API.Services
             return true;
         }
 
-        public async Task<bool> EditTask(string accessToken, Guid parentId, string caption)
+        public async Task<bool> EditTaskAsync(string accessToken, Guid parentId, string caption)
         {
-            var user = await GetUser(accessToken);
+            var user = await GetUserAsync(accessToken);
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return false;
@@ -282,15 +291,15 @@ namespace TaskPlusPlus.API.Services
             return true;
         }
 
-        public async Task<bool> EditSubTask(string accessToken, Guid parentId, string caption)
+        public async Task<bool> EditSubTaskAsync(string accessToken, Guid parentId, string caption)
         {
-            var user = await GetUser(accessToken);
+            var user = await GetUserAsync(accessToken);
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return false;
 
             // check accessibility
-            if (await HaveAccessToSubTask(parentId) == false) return false;
+            if (await HaveAccessToSubTaskAsync(parentId) == false) return false;
 
             task.Caption = caption;
 
