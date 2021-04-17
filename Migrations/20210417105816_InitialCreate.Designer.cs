@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskPlusPlus.API.DbContexts;
 
 namespace TaskPlusPlus.API.Migrations
 {
     [DbContext(typeof(TaskPlusPlusContext))]
-    partial class CourseLibraryContextModelSnapshot : ModelSnapshot
+    [Migration("20210417105816_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,7 +34,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 4, 17, 13, 49, 35, 829, DateTimeKind.Local).AddTicks(457));
+                        .HasDefaultValue(new DateTime(2021, 4, 17, 15, 28, 15, 695, DateTimeKind.Local).AddTicks(9485));
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uniqueidentifier");
@@ -110,7 +112,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 4, 17, 13, 49, 35, 832, DateTimeKind.Local).AddTicks(6421));
+                        .HasDefaultValue(new DateTime(2021, 4, 17, 15, 28, 15, 699, DateTimeKind.Local).AddTicks(7160));
 
                     b.Property<bool>("IsValid")
                         .HasColumnType("bit");
@@ -141,7 +143,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("GrantedAccessAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 4, 17, 13, 49, 35, 832, DateTimeKind.Local).AddTicks(4497));
+                        .HasDefaultValue(new DateTime(2021, 4, 17, 15, 28, 15, 699, DateTimeKind.Local).AddTicks(4877));
 
                     b.Property<Guid>("ShareTo")
                         .HasColumnType("uniqueidentifier");
@@ -166,7 +168,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 4, 17, 13, 49, 35, 832, DateTimeKind.Local).AddTicks(8536));
+                        .HasDefaultValue(new DateTime(2021, 4, 17, 15, 28, 15, 699, DateTimeKind.Local).AddTicks(9371));
 
                     b.Property<bool>("Deleted")
                         .ValueGeneratedOnAdd()
@@ -212,75 +214,14 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("SignupDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 4, 17, 13, 49, 35, 832, DateTimeKind.Local).AddTicks(5561));
+                        .HasDefaultValue(new DateTime(2021, 4, 17, 15, 28, 15, 699, DateTimeKind.Local).AddTicks(6216));
 
                     b.HasKey("Id");
 
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.HasIndex("PhoneNumber")
-                        .IsUnique();
-
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
-                            FirstName = "Berry",
-                            LastName = "Griffin Beak Eldritch",
-                            PhoneNumber = "Ships",
-                            SignupDate = new DateTime(1650, 7, 23, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            Id = new Guid("da2fd609-d754-4feb-8acd-c4f9ff13ba96"),
-                            FirstName = "Nancy",
-                            LastName = "Swashbuckler Rye",
-                            PhoneNumber = "Rum",
-                            SignupDate = new DateTime(1668, 5, 21, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            Id = new Guid("2902b665-1190-4c70-9915-b9c2d7680450"),
-                            FirstName = "Eli",
-                            LastName = "Ivory Bones Sweet",
-                            PhoneNumber = "Singing",
-                            SignupDate = new DateTime(1701, 12, 16, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            Id = new Guid("102b566b-ba1f-404c-b2df-e2cde39ade09"),
-                            FirstName = "Arnold",
-                            LastName = "The Unseen Stafford",
-                            PhoneNumber = "Singing",
-                            SignupDate = new DateTime(1702, 3, 6, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            Id = new Guid("5b3621c0-7b12-4e80-9c8b-3398cba7ee05"),
-                            FirstName = "Seabury",
-                            LastName = "Toxic Reyson",
-                            PhoneNumber = "Maps",
-                            SignupDate = new DateTime(1690, 11, 23, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            Id = new Guid("2aadd2df-7caf-45ab-9355-7f6332985a87"),
-                            FirstName = "Rutherford",
-                            LastName = "Fearless Cloven",
-                            PhoneNumber = "General debauchery",
-                            SignupDate = new DateTime(1723, 4, 5, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            Id = new Guid("2ee49fe3-edf2-4f91-8409-3eb25ce6ca51"),
-                            FirstName = "Atherton",
-                            LastName = "Crow Ridley",
-                            PhoneNumber = "Rum",
-                            SignupDate = new DateTime(1721, 10, 11, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        });
                 });
 #pragma warning restore 612, 618
         }

@@ -85,8 +85,11 @@ namespace TaskPlusPlus.API.Services
 
             var board = new Board()
             {
+                Id = Guid.NewGuid(),
+                CreationAt = DateTime.Now,
                 Caption = caption,
-                CreatorId = user.UserId
+                CreatorId = user.UserId,
+                Deleted = false
             };
             await _context.Boards.AddAsync(board);
 
@@ -138,45 +141,56 @@ namespace TaskPlusPlus.API.Services
             return false;
         }
 
-        public async Task<Tuple<bool, string>> SigninAsync(string phoneNumber) // todo: edit need
+        public async Task<JObject> SigninAsync(string phoneNumber) // todo: edit need
         {
             if (!await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
-                return new Tuple<bool, string>(false, string.Empty);
+                return new JObject { { "result", false }, { "accessCode", string.Empty } };
 
             var user = await _context.Users.SingleOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
-            if (user == null) return new Tuple<bool, string>(false, string.Empty);
+            if (user == null) return new JObject { { "result", false }, { "accessCode", string.Empty } };
 
             // save new session
-            var session = new Session()
+            var newSession = new Session()
             {
+                AccessToken = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid(),
                 IsValid = true,
-                UserId = user.Id
+                UserId = user.Id,
+                CreationAt = DateTime.Now
             };
 
-            return new Tuple<bool, string>(true, session.AccessToken);
+            await _context.Sessions.AddAsync(newSession);
+            await _context.SaveChangesAsync();
+            return new JObject { { "result", true }, { "accessCode", newSession.AccessToken } };
         }
-        public async Task<Tuple<bool, string>> SignupAsync(string firstName, string lastName, string phoneNumber)
+        public async Task<JObject> SignupAsync(string firstName, string lastName, string phoneNumber)
         {
-            if (!await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
-                return new Tuple<bool, string>(false, string.Empty);
+            if (await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
+                return new JObject { { "result", false }, { "accessCode", string.Empty } };
 
             var newUser = new User()
             {
+                Id = Guid.NewGuid(),
                 FirstName = firstName,
                 LastName = lastName,
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                SignupDate = DateTime.Now
             };
             await _context.Users.AddAsync(newUser);
-            await _context.SaveChangesAsync();
 
             // save new session
-            var session = new Session()
+            var newSession = new Session()
             {
+                AccessToken = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid(),
                 IsValid = true,
-                UserId = newUser.Id
+                UserId = newUser.Id,
+                CreationAt = DateTime.Now
             };
 
-            return new Tuple<bool, string>(true, session.AccessToken);
+            await _context.Sessions.AddAsync(newSession);
+            await _context.SaveChangesAsync();
+            return new JObject { { "result", true }, { "accessCode", newSession.AccessToken } };
         }
 
         public async Task<string> GetTasksAsync(string accessToken, Guid parentId)
