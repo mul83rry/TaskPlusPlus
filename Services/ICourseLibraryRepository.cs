@@ -1,10 +1,10 @@
-﻿using CourseLibrary.API.Entities;
+﻿using TaskPlusPlus.API.Entities;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CourseLibrary.API.Services
+namespace TaskPlusPlus.API.Services
 {
     public interface ICourseLibraryRepository
     {

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseLibrary.API", "CourseLibrary.API.csproj", "{EDDF66A1-D29F-428F-924C-93D53CC03323}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskPlusPlus.API", "TaskPlusPlus.API.csproj", "{EDDF66A1-D29F-428F-924C-93D53CC03323}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

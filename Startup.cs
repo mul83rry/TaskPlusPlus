@@ -1,5 +1,5 @@
-using CourseLibrary.API.DbContexts;
-using CourseLibrary.API.Services;
+using TaskPlusPlus.API.DbContexts;
+using TaskPlusPlus.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace CourseLibrary.API
+namespace TaskPlusPlus.API
 {
     public class Startup
     {
@@ -26,7 +26,7 @@ namespace CourseLibrary.API
              
             services.AddScoped<ICourseLibraryRepository, CourseLibraryRepository>();
 
-            services.AddDbContext<CourseLibraryContext>(options =>
+            services.AddDbContext<TaskPlusPlusContext>(options =>
             {
                 options.UseSqlServer(
                     @"Server=(localdb)\mssqllocaldb;Database=CourseLibraryDB;Trusted_Connection=True;");

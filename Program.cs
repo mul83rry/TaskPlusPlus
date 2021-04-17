@@ -1,4 +1,4 @@
-using CourseLibrary.API.DbContexts;
+using TaskPlusPlus.API.DbContexts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace CourseLibrary.API
+namespace TaskPlusPlus.API
 {
     public class Program
     {
@@ -20,7 +20,7 @@ namespace CourseLibrary.API
             {
                 try
                 {
-                    var context = scope.ServiceProvider.GetService<CourseLibraryContext>();
+                    var context = scope.ServiceProvider.GetService<TaskPlusPlusContext>();
                     // for demo purposes, delete the database & migrate on startup so 
                     // we can start with a clean slate
                     context.Database.EnsureDeleted();

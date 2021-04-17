@@ -1,5 +1,5 @@
-﻿using CourseLibrary.API.DbContexts;
-using CourseLibrary.API.Entities;
+﻿using TaskPlusPlus.API.DbContexts;
+using TaskPlusPlus.API.Entities;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System;
@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CourseLibrary.API.Services
+namespace TaskPlusPlus.API.Services
 {
     public class CourseLibraryRepository : ICourseLibraryRepository, IDisposable
     {
-        private readonly CourseLibraryContext _context;
+        private readonly TaskPlusPlusContext _context;
 
         public void Dispose()
         {

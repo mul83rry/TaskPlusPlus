@@ -1,12 +1,12 @@
-﻿using CourseLibrary.API.Entities;
+﻿using TaskPlusPlus.API.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 
-namespace CourseLibrary.API.DbContexts
+namespace TaskPlusPlus.API.DbContexts
 {
-    public class CourseLibraryContext : DbContext
+    public class TaskPlusPlusContext : DbContext
     {
-        public CourseLibraryContext(DbContextOptions<CourseLibraryContext> options)
+        public TaskPlusPlusContext(DbContextOptions<TaskPlusPlusContext> options)
            : base(options)
         {
         }
