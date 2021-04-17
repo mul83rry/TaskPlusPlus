@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TaskPlusPlus.API.Services
 {
-    public interface ICourseLibraryRepository
+    public interface ITaskPlusPlusRepository
     {
         Task<Tuple<bool, string>> Signup(string firstName, string lastName, string phoneNumber);
         Task<Tuple<bool, string>> Signin(string phoneNumber);

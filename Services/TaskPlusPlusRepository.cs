@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace TaskPlusPlus.API.Services
 {
-    public class CourseLibraryRepository : ICourseLibraryRepository, IDisposable
+    public class TaskPlusPlusRepository : ITaskPlusPlusRepository, IDisposable
     {
         private readonly TaskPlusPlusContext _context;
-
+        
         public void Dispose()
         {
             Dispose(true);

@@ -24,12 +24,12 @@ namespace TaskPlusPlus.API
         {
            services.AddControllers();
              
-            services.AddScoped<ICourseLibraryRepository, CourseLibraryRepository>();
+            services.AddScoped<ITaskPlusPlusRepository, TaskPlusPlusRepository>();
 
             services.AddDbContext<TaskPlusPlusContext>(options =>
             {
                 options.UseSqlServer(
-                    @"Server=(localdb)\mssqllocaldb;Database=CourseLibraryDB;Trusted_Connection=True;");
+                    @"Server=(localdb)\mssqllocaldb;Database=TaskPlusPlusDB;Trusted_Connection=True;");
             }); 
         }
 
