@@ -3,10 +3,23 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace TaskPlusPlus.API.Migrations
 {
-    public partial class Initial : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "AssignTos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AssignTos", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Boards",
                 columns: table => new
@@ -14,7 +27,7 @@ namespace TaskPlusPlus.API.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Caption = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 4, 18, 9, 42, 0, 941, DateTimeKind.Local).AddTicks(7707)),
+                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 4, 19, 1, 40, 50, 191, DateTimeKind.Local).AddTicks(6176)),
                     Deleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -57,7 +70,7 @@ namespace TaskPlusPlus.API.Migrations
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AccessToken = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IsValid = table.Column<bool>(type: "bit", nullable: false),
-                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 4, 18, 9, 42, 0, 946, DateTimeKind.Local).AddTicks(1504))
+                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 4, 19, 1, 40, 50, 195, DateTimeKind.Local).AddTicks(1049))
                 },
                 constraints: table =>
                 {
@@ -71,11 +84,24 @@ namespace TaskPlusPlus.API.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     BoardId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ShareTo = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    GrantedAccessAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 4, 18, 9, 42, 0, 945, DateTimeKind.Local).AddTicks(8989))
+                    GrantedAccessAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 4, 19, 1, 40, 50, 194, DateTimeKind.Local).AddTicks(9224))
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SharedBoards", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tags",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BoardId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Caption = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -86,7 +112,7 @@ namespace TaskPlusPlus.API.Migrations
                     Caption = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Star = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     ParentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 4, 18, 9, 42, 0, 946, DateTimeKind.Local).AddTicks(3786)),
+                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 4, 19, 1, 40, 50, 195, DateTimeKind.Local).AddTicks(3276)),
                     Deleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -101,13 +127,19 @@ namespace TaskPlusPlus.API.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    SignupDate = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 4, 18, 9, 42, 0, 946, DateTimeKind.Local).AddTicks(547)),
+                    SignupDate = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 4, 19, 1, 40, 50, 195, DateTimeKind.Local).AddTicks(203)),
                     PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AssignTos_Id",
+                table: "AssignTos",
+                column: "Id",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Boards_Id",
@@ -146,6 +178,12 @@ namespace TaskPlusPlus.API.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Tags_Id",
+                table: "Tags",
+                column: "Id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Tasks_Id",
                 table: "Tasks",
                 column: "Id",
@@ -161,6 +199,9 @@ namespace TaskPlusPlus.API.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AssignTos");
+
+            migrationBuilder.DropTable(
                 name: "Boards");
 
             migrationBuilder.DropTable(
@@ -174,6 +215,9 @@ namespace TaskPlusPlus.API.Migrations
 
             migrationBuilder.DropTable(
                 name: "SharedBoards");
+
+            migrationBuilder.DropTable(
+                name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "Tasks");

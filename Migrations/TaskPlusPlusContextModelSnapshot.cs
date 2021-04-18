@@ -19,6 +19,26 @@ namespace TaskPlusPlus.API.Migrations
                 .HasAnnotation("ProductVersion", "6.0.0-preview.1.21102.2")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("TaskPlusPlus.API.Entities.AssignTo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.ToTable("AssignTos");
+                });
+
             modelBuilder.Entity("TaskPlusPlus.API.Entities.Board", b =>
                 {
                     b.Property<Guid>("Id")
@@ -32,7 +52,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 4, 18, 9, 42, 0, 941, DateTimeKind.Local).AddTicks(7707));
+                        .HasDefaultValue(new DateTime(2021, 4, 19, 1, 40, 50, 191, DateTimeKind.Local).AddTicks(6176));
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uniqueidentifier");
@@ -110,7 +130,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 4, 18, 9, 42, 0, 946, DateTimeKind.Local).AddTicks(1504));
+                        .HasDefaultValue(new DateTime(2021, 4, 19, 1, 40, 50, 195, DateTimeKind.Local).AddTicks(1049));
 
                     b.Property<bool>("IsValid")
                         .HasColumnType("bit");
@@ -141,7 +161,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("GrantedAccessAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 4, 18, 9, 42, 0, 945, DateTimeKind.Local).AddTicks(8989));
+                        .HasDefaultValue(new DateTime(2021, 4, 19, 1, 40, 50, 194, DateTimeKind.Local).AddTicks(9224));
 
                     b.Property<Guid>("ShareTo")
                         .HasColumnType("uniqueidentifier");
@@ -152,6 +172,26 @@ namespace TaskPlusPlus.API.Migrations
                         .IsUnique();
 
                     b.ToTable("SharedBoards");
+                });
+
+            modelBuilder.Entity("TaskPlusPlus.API.Entities.Tag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BoardId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Caption")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("TaskPlusPlus.API.Entities.Task", b =>
@@ -166,7 +206,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 4, 18, 9, 42, 0, 946, DateTimeKind.Local).AddTicks(3786));
+                        .HasDefaultValue(new DateTime(2021, 4, 19, 1, 40, 50, 195, DateTimeKind.Local).AddTicks(3276));
 
                     b.Property<bool>("Deleted")
                         .ValueGeneratedOnAdd()
@@ -212,7 +252,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("SignupDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 4, 18, 9, 42, 0, 946, DateTimeKind.Local).AddTicks(547));
+                        .HasDefaultValue(new DateTime(2021, 4, 19, 1, 40, 50, 195, DateTimeKind.Local).AddTicks(203));
 
                     b.HasKey("Id");
 
