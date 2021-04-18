@@ -51,7 +51,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<string> GetBoardsAsync(string accessToken)
         {
-            var user = await GetUserAsync(accessToken);
+            var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
             var res = from board in _context.Boards
                       join sharedBoard in _context.SharedBoards
@@ -81,7 +81,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<bool> AddBoardAsync(string accessToken, string caption)
         {
-            var user = await GetUserAsync(accessToken);
+            var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
             var board = new Board()
             {
@@ -107,7 +107,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<bool> UpdateBoardAsync(string accessToken, Guid boardId)
         {
-            var user = await GetUserAsync(accessToken);
+            var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
             var found = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
             if (found != null)
@@ -125,7 +125,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<bool> DeleteBoardAsync(string accessToken, Guid boardId)
         {
-            var user = await GetUserAsync(accessToken);
+            var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
             var found = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
             if (found != null)
@@ -195,7 +195,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<string> GetTasksAsync(string accessToken, Guid parentId)
         {
-            var user = await GetUserAsync(accessToken);
+            var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
             var res = from task in _context.Tasks
                       .Where(t => t.ParentId == parentId && !t.Deleted).OrderBy(t => t.CreationAt)
@@ -223,7 +223,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<bool> AddTaskAsync(string accessToken, Guid parentId, string caption)
         {
-            var user = await GetUserAsync(accessToken);
+            var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
             var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == parentId);
             if (board == null) return false;
@@ -268,7 +268,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<bool> AddSubTaskAsync(string accessToken, Guid parentId, string caption)
         {
-            var user = await GetUserAsync(accessToken);
+            var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return false;
@@ -289,7 +289,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<bool> EditTaskAsync(string accessToken, Guid parentId, string caption)
         {
-            var user = await GetUserAsync(accessToken);
+            var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return false;
@@ -307,7 +307,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<bool> EditSubTaskAsync(string accessToken, Guid parentId, string caption)
         {
-            var user = await GetUserAsync(accessToken);
+            var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return false;
