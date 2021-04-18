@@ -11,14 +11,14 @@ namespace TaskPlusPlus.API.Services
         
         Task<string> GetBoardsAsync(string accessToken);
         Task<bool> AddBoardAsync(string accessToken, string caption);
-        Task<bool> UpdateBoardAsync(string accessToken, Guid boardId);
+        Task<bool> UpdateBoardAsync(string accessToken, Guid boardId, string caption);
         Task<bool> DeleteBoardAsync(string accessToken, Guid boardId);
 
         Task<string> GetTasksAsync(string accessToken, Guid parentId);
         Task<bool> AddTaskAsync(string accessToken, Guid parentId, string caption);
-        Task<bool> EditTaskAsync(string accessToken, Guid parentId, string caption);
+        Task<bool> EditTaskAsync(string accessToken, Guid parentId, string caption, bool star);
         Task<bool> AddSubTaskAsync(string accessToken, Guid parentId, string caption);
-        Task<bool> EditSubTaskAsync(string accessToken, Guid parentId, string caption);
+        Task<bool> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star);
 
 
     }

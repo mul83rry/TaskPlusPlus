@@ -104,23 +104,20 @@ namespace TaskPlusPlus.API.Services
 
             return true;
         }
-
-        public async Task<bool> UpdateBoardAsync(string accessToken, Guid boardId)
+        public async Task<bool> UpdateBoardAsync(string accessToken, Guid boardId, string caption)
         {
             var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
-            var found = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
-            if (found != null)
-            {
-                // check accessibility
-                if (!_context.SharedBoards.Any(b => b.ShareTo == user.Id && b.BoardId == boardId))
-                    return false;
+            // check accessibility
+            if (!_context.SharedBoards.Any(b => b.ShareTo == user.Id && b.BoardId == boardId))
+                return false;
 
-                found.Caption = found.Caption;
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            return false;
+            var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
+            board.Caption = caption;
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<bool> DeleteBoardAsync(string accessToken, Guid boardId)
@@ -234,8 +231,12 @@ namespace TaskPlusPlus.API.Services
 
             var task = new Entities.Task()
             {
+                Id = Guid.NewGuid(),
                 Caption = caption,
-                ParentId = board.Id
+                ParentId = board.Id,
+                Star = false,
+                CreationAt = DateTime.Now,
+                Deleted = false
             };
 
             await _context.Tasks.AddAsync(task);
@@ -277,8 +278,12 @@ namespace TaskPlusPlus.API.Services
 
             var subTask = new Entities.Task()
             {
+                Id = Guid.NewGuid(),
                 Caption = caption,
-                ParentId = task.Id
+                ParentId = task.Id,
+                Star = false,
+                CreationAt = DateTime.Now,
+                Deleted = false
             };
 
             await _context.Tasks.AddAsync(subTask);
@@ -287,7 +292,7 @@ namespace TaskPlusPlus.API.Services
             return true;
         }
 
-        public async Task<bool> EditTaskAsync(string accessToken, Guid parentId, string caption)
+        public async Task<bool> EditTaskAsync(string accessToken, Guid parentId, string caption, bool star)
         {
             var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
@@ -295,17 +300,18 @@ namespace TaskPlusPlus.API.Services
             if (task == null) return false;
 
             // check accessibility
-            if (!_context.SharedBoards.Any(b => b.ShareTo == user.Id))
+            if (!_context.SharedBoards.Any(b => b.ShareTo == user.Id && task.Id == parentId))
                 return false;
 
             task.Caption = caption;
+            task.Star = star;
 
             await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public async Task<bool> EditSubTaskAsync(string accessToken, Guid parentId, string caption)
+        public async Task<bool> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star)
         {
             var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
@@ -316,10 +322,12 @@ namespace TaskPlusPlus.API.Services
             if (await HaveAccessToSubTaskAsync(parentId) == false) return false;
 
             task.Caption = caption;
+            task.Star = star;
 
             await _context.SaveChangesAsync();
 
             return true;
         }
+
     }
 }
