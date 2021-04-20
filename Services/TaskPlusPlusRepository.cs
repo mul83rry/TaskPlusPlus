@@ -153,7 +153,8 @@ namespace TaskPlusPlus.API.Services
                 Id = Guid.NewGuid(),
                 IsValid = true,
                 UserId = user.Id,
-                CreationAt = DateTime.Now
+                CreationAt = DateTime.Now,
+                LastFetchTime = DateTime.Now - TimeSpan.FromHours(1)
             };
 
             await _context.Sessions.AddAsync(newSession);

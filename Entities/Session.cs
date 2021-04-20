@@ -22,5 +22,8 @@ namespace TaskPlusPlus.API.Entities
 
         [Required]
         public DateTime CreationAt { get; set; }
+
+        [Required]
+        public DateTime LastFetchTime { get; set; }
     }
 }
