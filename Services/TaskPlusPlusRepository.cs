@@ -71,7 +71,7 @@ namespace TaskPlusPlus.API.Services
                 jsonData.Add(new JObject
                 {
                     {"id", item.Id },
-                    {"creaotrId",  item.CreatorId },
+                    {"CreatorId",  item.CreatorId },
                     {"caption",  item.Caption },
                     {"creationAt",  item.CreationAt }
                 });
