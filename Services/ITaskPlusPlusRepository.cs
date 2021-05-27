@@ -10,15 +10,15 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> SigninAsync(string phoneNumber);
         
         Task<string> GetBoardsAsync(string accessToken);
-        Task<bool> AddBoardAsync(string accessToken, string caption);
-        Task<bool> UpdateBoardAsync(string accessToken, Guid boardId, string caption);
-        Task<bool> DeleteBoardAsync(string accessToken, Guid boardId);
+        Task<JObject> AddBoardAsync(string accessToken, string caption);
+        Task<JObject> UpdateBoardAsync(string accessToken, Guid boardId, string caption);
+        Task<JObject> DeleteBoardAsync(string accessToken, Guid boardId);
 
         Task<string> GetTasksAsync(string accessToken, Guid parentId);
-        Task<bool> AddTaskAsync(string accessToken, Guid parentId, string caption);
-        Task<bool> EditTaskAsync(string accessToken, Guid parentId, string caption, bool star);
-        Task<bool> AddSubTaskAsync(string accessToken, Guid parentId, string caption);
-        Task<bool> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star);
+        Task<JObject> AddTaskAsync(string accessToken, Guid parentId, string caption);
+        Task<JObject> EditTaskAsync(string accessToken, Guid parentId, string caption, bool star);
+        Task<JObject> AddSubTaskAsync(string accessToken, Guid parentId, string caption);
+        Task<JObject> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star);
 
 
     }
