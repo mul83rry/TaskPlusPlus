@@ -96,7 +96,8 @@ namespace TaskPlusPlus.API.Services
             // add to shareTo for this user
             var shareTo = new SharedBoard()
             {
-                ShareTo = user.Id
+                ShareTo = user.Id,
+                BoardId = board.Id
             };
             await _context.SharedBoards.AddAsync(shareTo);
 
