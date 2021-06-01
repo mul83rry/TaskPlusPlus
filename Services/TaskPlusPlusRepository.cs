@@ -55,7 +55,7 @@ namespace TaskPlusPlus.API.Services
 
             var res = from board in _context.Boards
                       join sharedBoard in _context.SharedBoards
-                      .Where(s => s.ShareTo == user.UserId).OrderBy(s => s.GrantedAccessAt)
+                      .Where(shared => shared.ShareTo == user.UserId).OrderBy(s => s.GrantedAccessAt)
                       on board.Id equals sharedBoard.BoardId
                       select new
                       {
