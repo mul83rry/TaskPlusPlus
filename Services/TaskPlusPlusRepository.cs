@@ -228,7 +228,7 @@ namespace TaskPlusPlus.API.Services
             if (board == null) new JObject { { "result", false } };
 
             // check accessibility
-            if (!_context.SharedBoards.Any(b => b.ShareTo == user.Id && b.BoardId == board.Id))
+            if (!_context.SharedBoards.Any(b => b.ShareTo == user.UserId && b.BoardId == board.Id))
                 return new JObject { { "result", false } };
 
             var task = new Entities.Task()
