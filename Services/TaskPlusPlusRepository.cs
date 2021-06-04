@@ -225,12 +225,13 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserAsync(accessToken) ?? throw new NullReferenceException();
 
             var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == parentId);
-            if (board == null) new JObject { { "result", false } };
+            if (board == null)return new JObject { { "result", false } };
 
             // check accessibility
             if (!_context.SharedBoards.Any(b => b.ShareTo == user.Id && b.BoardId == board.Id))
-                return new JObject { { "result", false } };
+                return new JObject { {"result ", false } };
 
+           
             var task = new Entities.Task()
             {
                 Id = Guid.NewGuid(),
@@ -245,6 +246,7 @@ namespace TaskPlusPlus.API.Services
             await _context.SaveChangesAsync();
 
             return new JObject { { "result", true } };
+           
         }
 
         private async Task<bool> HaveAccessToSubTaskAsync(Guid parentId)
