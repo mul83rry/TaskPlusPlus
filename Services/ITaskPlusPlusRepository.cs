@@ -6,7 +6,7 @@ namespace TaskPlusPlus.API.Services
 {
     public interface ITaskPlusPlusRepository
     {
-        Task<JObject> SignupAsync(string firstName, string lastName, string phoneNumber);
+        Task<JObject> SignUpAsync(string firstName, string lastName, string phoneNumber);
         Task<JObject> SigninAsync(string phoneNumber);
         
         Task<string> GetBoardsAsync(string accessToken);
@@ -20,6 +20,9 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> AddSubTaskAsync(string accessToken, Guid parentId, string caption);
         Task<JObject> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star);
 
+        Task<JObject> HaveChild(string accessToken, Guid parentId);
+
+        
 
     }
 }
