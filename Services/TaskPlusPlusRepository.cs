@@ -3,7 +3,6 @@ using TaskPlusPlus.API.Entities;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -166,7 +165,7 @@ namespace TaskPlusPlus.API.Services
             await _context.SaveChangesAsync();
             return new JObject { { "result", true }, { "accessCode", newSession.AccessToken } };
         }
-        public async Task<JObject> SignupAsync(string firstName, string lastName, string phoneNumber)
+        public async Task<JObject> SignUpAsync(string firstName, string lastName, string phoneNumber)
         {
             if (await _context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
                 return new JObject { { "result", false }, { "accessCode", string.Empty } };
@@ -229,7 +228,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
 
             var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == parentId);
-            if (board == null)return new JObject { { "result", false } };
+            if (board == null) return new JObject { { "result", false } };
 
             // check accessibility
             if (!_context.SharedBoards.Any(b => b.ShareTo == user.UserId && b.BoardId == board.Id))
@@ -249,18 +248,18 @@ namespace TaskPlusPlus.API.Services
             await _context.SaveChangesAsync();
 
             return new JObject { { "result", true } };
-           
+
         }
 
-        private async Task<bool> HaveAccessToSubTaskAsync(Guid parentId)
+        private async Task<bool> HaveAccessToSubTaskAsync(Guid parentId, Guid userId)
         {
-            // todo: find first subtask, find task, check accessibility
+            // todo: find first sub task, find task, check accessibility
             var pId = parentId;
 
             while (true)
             {
-                var temptask = await _context.Tasks.SingleOrDefaultAsync(t => t.ParentId == pId);
-                var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == temptask.Id);
+                var tempTask = await _context.Tasks.SingleOrDefaultAsync(t => t.ParentId == pId);
+                var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == tempTask.Id);
                 if (board == null) continue;
 
                 pId = board.Id;
@@ -268,20 +267,19 @@ namespace TaskPlusPlus.API.Services
             }
 
             // check accessibility
-            if (!_context.SharedBoards.Any(b => b.BoardId == pId))
-                return false;
-
-            return true;
+            return _context.SharedBoards.Any(b => b.BoardId == pId && b.ShareTo == userId); // todo: check
         }
 
         public async Task<JObject> AddSubTaskAsync(string accessToken, Guid parentId, string caption)
         {
             var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
 
+            // check accessibility
+            if (await HaveAccessToSubTaskAsync(parentId, user.Id) == false) return new JObject { { "result", false } };
+
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return new JObject { { "result", false } };
 
-            if (await HaveAccessToSubTaskAsync(parentId) == false) return new JObject { { "result", false } };
 
             var subTask = new Entities.Task()
             {
@@ -322,11 +320,12 @@ namespace TaskPlusPlus.API.Services
         {
             var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
 
+            // check accessibility
+            if (await HaveAccessToSubTaskAsync(parentId, user.Id) == false) return new JObject { { "result", false } };
+
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return new JObject { { "result", false } };
 
-            // check accessibility
-            if (await HaveAccessToSubTaskAsync(parentId) == false) return new JObject { { "result", false } };
 
             task.Caption = caption;
             task.Star = star;
@@ -336,5 +335,14 @@ namespace TaskPlusPlus.API.Services
             return new JObject { { "result", true } };
         }
 
+        public async Task<JObject> HaveChild(string accessToken, Guid parentId)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+
+            // check accessibility
+            return await HaveAccessToSubTaskAsync(parentId, user.Id) == false ?
+                new JObject { { "result", false } } :
+                new JObject { { "result", await _context.Tasks.AnyAsync(t => t.Id == parentId) } };
+        }
     }
 }

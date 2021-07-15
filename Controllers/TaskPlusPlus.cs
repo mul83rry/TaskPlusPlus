@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using TaskPlusPlus.API.Services;
 
 namespace TaskPlusPlus.API.Controllers
@@ -24,17 +23,17 @@ namespace TaskPlusPlus.API.Controllers
         }
 
         [HttpGet]
-        [Route("signin/{phonenumber}")]
+        [Route("signin/{phoneNumber}")]
         public async Task<IActionResult> SigninAsync(string phoneNumber)
         {
             var data = await _taskPlusPlusRepository.SigninAsync(phoneNumber);
             return Ok(data.ToString());
         }
         [HttpGet]
-        [Route("signup/{fname}/{lname}/{pnumber}")]
-        public async Task<IActionResult> SignupAsync(string fName, string lName, string pNumber)
+        [Route("signup/{fName}/{lname}/{pNumber}")]
+        public async Task<IActionResult> SignUpAsync(string fName, string lName, string pNumber)
         {
-            var data = await _taskPlusPlusRepository.SignupAsync(fName, lName, pNumber);
+            var data = await _taskPlusPlusRepository.SignUpAsync(fName, lName, pNumber);
             return Ok(data.ToString());
         }
 
@@ -46,7 +45,7 @@ namespace TaskPlusPlus.API.Controllers
             return Ok(data.ToString());
         }
         [HttpGet]
-        [Route("board/update/{accessToken}/{boardId}/{caption}")]
+        [Route("board/update/{accessToken}/{boardId:guid}/{caption}")]
         public async Task<IActionResult> UpdateBoardAsync(string accessToken, Guid boardId, string caption)
         {
             var data = await _taskPlusPlusRepository.UpdateBoardAsync(accessToken, boardId, caption);
@@ -64,15 +63,15 @@ namespace TaskPlusPlus.API.Controllers
         public async Task<IActionResult> GetBoardsListAsync(string accessToken)
         {
             var data = await _taskPlusPlusRepository.GetBoardsAsync(accessToken);
-            return Ok(data.ToString());
+            return Ok(data);
         }
 
         [HttpGet]
-        [Route("task/list/{accessToken}/{parentId}")]
+        [Route("task/list/{accessToken}/{parentId:guid}")]
         public async Task<IActionResult> GetTaskAsync(string accessToken, Guid parentId)
         {
             var data = await _taskPlusPlusRepository.GetTasksAsync(accessToken, parentId);
-            return Ok(data.ToString());
+            return Ok(data);
         }
         [HttpGet]
         [Route("task/add/{accessToken}/{parentId}/{caption}")]
@@ -82,21 +81,21 @@ namespace TaskPlusPlus.API.Controllers
             return Ok(data.ToString());
         }
         [HttpGet]
-        [Route("task/edit/{accessToken}/{parentId}/{caption}/{star}")]
+        [Route("task/edit/{accessToken}/{parentId:guid}/{caption}/{star:bool}")]
         public async Task<IActionResult> EditTaskAsync(string accessToken, Guid parentId, string caption, bool star)
         {
             var data = await _taskPlusPlusRepository.EditTaskAsync(accessToken, parentId, caption, star);
             return Ok(data.ToString());
         }
         [HttpGet]
-        [Route("subtask/add/{accessToken}/{parentId}/{caption}")]
+        [Route("subtask/add/{accessToken}/{parentId:guid}/{caption}")]
         public async Task<IActionResult> AddSubTaskAsync(string accessToken, Guid parentId, string caption)
         {
             var data = await _taskPlusPlusRepository.AddSubTaskAsync(accessToken, parentId, caption);
             return Ok(data.ToString());
         }
         [HttpGet]
-        [Route("subtask/edit/{accessToken}/{parentId}/{caption}/{star}")]
+        [Route("subtask/edit/{accessToken}/{parentId:guid}/{caption}/{star:bool}")]
         public async Task<IActionResult> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star)
         {
             var data = await _taskPlusPlusRepository.EditSubTaskAsync(accessToken, parentId, caption, star);
