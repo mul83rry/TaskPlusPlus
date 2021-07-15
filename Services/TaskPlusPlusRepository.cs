@@ -62,19 +62,23 @@ namespace TaskPlusPlus.API.Services
                           board.Id,
                           board.CreatorId,
                           board.Caption,
-                          board.CreationAt
+                          board.CreationAt,
+                          board.Deleted
                       };
 
             var jsonData = new JArray();
             foreach (var item in res)
             {
-                jsonData.Add(new JObject
+                if(!item.Deleted)
                 {
-                    {"id", item.Id },
-                    {"CreatorId",  item.CreatorId },
-                    {"caption",  item.Caption },
-                    {"creationAt",  item.CreationAt }
-                });
+                    jsonData.Add(new JObject
+                    {
+                        {"id", item.Id },
+                        {"CreatorId",  item.CreatorId },
+                        {"caption",  item.Caption },
+                        {"creationAt",  item.CreationAt }
+                    });
+                }
             }
             return jsonData.ToString();
         }
@@ -110,7 +114,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
 
             // check accessibility
-            if (!_context.SharedBoards.Any(b => b.ShareTo == user.Id && b.BoardId == boardId))
+            if (!_context.SharedBoards.Any(b => b.ShareTo == user.UserId && b.BoardId == boardId))
                 return new JObject { { "result", false } };
 
             var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
@@ -303,7 +307,7 @@ namespace TaskPlusPlus.API.Services
             if (task == null) return new JObject { { "result", false } };
 
             // check accessibility
-            if (!_context.SharedBoards.Any(b => b.ShareTo == user.Id && task.Id == parentId))
+            if (!_context.SharedBoards.Any(b => b.ShareTo == user.UserId && task.Id == parentId))
                 return new JObject { { "result", false } };
 
             task.Caption = caption;
