@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Threading.Tasks;
+using TaskPlusPlus.API.Entities;
 
 namespace TaskPlusPlus.API.Services
 {
@@ -20,7 +21,7 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> AddSubTaskAsync(string accessToken, Guid parentId, string caption);
         Task<JObject> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star);
 
-        Task<JObject> HaveChild(string accessToken, Guid parentId);
+        Task<JObject> HaveChild(Session user,Guid taskId);
 
         
 

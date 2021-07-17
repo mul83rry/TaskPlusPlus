@@ -217,7 +217,8 @@ namespace TaskPlusPlus.API.Services
                     {"id", item.Id },
                     {"caption",  item.Caption },
                     {"star",  item.Star },
-                    {"creationAt",  item.CreationAt }
+                    {"creationAt",  item.CreationAt },
+                    { "haveChild", HaveChild(user,item.Id).Result["result"] },
                 });
             }
             return jsonData.ToString();
@@ -258,8 +259,8 @@ namespace TaskPlusPlus.API.Services
 
             while (true)
             {
-                var tempTask = await _context.Tasks.SingleOrDefaultAsync(t => t.ParentId == pId);
-                var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == tempTask.Id);
+                var tempTask = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == pId);
+                var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == tempTask.ParentId);
                 if (board == null) continue;
 
                 pId = board.Id;
@@ -275,7 +276,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
 
             // check accessibility
-            if (await HaveAccessToSubTaskAsync(parentId, user.Id) == false) return new JObject { { "result", false } };
+            if (await HaveAccessToSubTaskAsync(parentId, user.UserId) == false) return new JObject { { "result", false } };
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return new JObject { { "result", false } };
@@ -321,7 +322,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
 
             // check accessibility
-            if (await HaveAccessToSubTaskAsync(parentId, user.Id) == false) return new JObject { { "result", false } };
+            if (await HaveAccessToSubTaskAsync(parentId, user.UserId) == false) return new JObject { { "result", false } };
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return new JObject { { "result", false } };
@@ -335,14 +336,12 @@ namespace TaskPlusPlus.API.Services
             return new JObject { { "result", true } };
         }
 
-        public async Task<JObject> HaveChild(string accessToken, Guid parentId)
+        public async Task<JObject> HaveChild(Session user,Guid taskId)
         {
-            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
-
             // check accessibility
-            return await HaveAccessToSubTaskAsync(parentId, user.Id) == false ?
-                new JObject { { "result", false } } :
-                new JObject { { "result", await _context.Tasks.AnyAsync(t => t.Id == parentId) } };
+            //return await HaveAccessToSubTaskAsync(taskId, user.UserId) == false ?
+                //new JObject { { "result", false } } :
+                return new JObject { { "result", await _context.Tasks.AnyAsync(t => t.ParentId == taskId) } };
         }
     }
 }

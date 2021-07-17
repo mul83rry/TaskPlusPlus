@@ -30,7 +30,7 @@ namespace TaskPlusPlus.API
             services.AddDbContext<TaskPlusPlusContext>(options =>
             {
                 options.UseSqlServer(
-                    @"Server=.;Database=TaskPlusPlusDB;Trusted_Connection=True;");
+                    @"Server=.;Database=TaskPlusPlusDB;Trusted_Connection=True;MultipleActiveResultSets = True");
             });
         }
 
