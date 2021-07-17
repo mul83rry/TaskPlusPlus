@@ -271,6 +271,7 @@ namespace TaskPlusPlus.API.Services
             return _context.SharedBoards.Any(b => b.BoardId == pId && b.ShareTo == userId); // todo: check
         }
 
+
         public async Task<JObject> AddSubTaskAsync(string accessToken, Guid parentId, string caption)
         {
             var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
@@ -322,7 +323,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
 
             // check accessibility
-            if (await HaveAccessToSubTaskAsync(parentId, user.UserId) == false) return new JObject { { "result", false } };
+            //if (await HaveAccessToEditSubTaskAsync(parentId, user.UserId) == false) return new JObject { { "result", false } };
 
             var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
             if (task == null) return new JObject { { "result", false } };
