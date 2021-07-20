@@ -206,20 +206,24 @@ namespace TaskPlusPlus.API.Services
                           task.Id,
                           task.Caption,
                           task.Star,
-                          task.CreationAt
+                          task.CreationAt,
+                          task.Deleted
                       };
 
             var jsonData = new JArray();
             foreach (var item in res)
             {
-                jsonData.Add(new JObject
+                if(item.Deleted == false)
                 {
-                    {"id", item.Id },
-                    {"caption",  item.Caption },
-                    {"star",  item.Star },
-                    {"creationAt",  item.CreationAt },
-                    { "haveChild", HaveChild(user,item.Id).Result["result"] },
-                });
+                    jsonData.Add(new JObject
+                    {
+                        {"id", item.Id },
+                        {"caption",  item.Caption },
+                        {"star",  item.Star },
+                        {"creationAt",  item.CreationAt },
+                        { "haveChild", HaveChild(user,item.Id).Result["result"] },
+                    });
+                }
             }
             return jsonData.ToString();
         }
@@ -337,12 +341,48 @@ namespace TaskPlusPlus.API.Services
             return new JObject { { "result", true } };
         }
 
+        private async Task<bool> haveAccessToTask(Guid userId,Guid parentId)
+        {
+            var pId = parentId;
+            var tempTask = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == pId); ;
+            while(true)
+            {
+                tempTask = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == pId);
+
+                if (tempTask == null) break;
+                pId = tempTask.ParentId;
+
+               
+
+            }
+
+                var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == pId);
+                return await _context.SharedBoards.AnyAsync(s => s.BoardId == board.Id && s.ShareTo == userId);
+        }
+
+        public async Task<JObject> DeleteTaskAsync(string accessToken,Guid parentId)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+            var task = await _context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId);
+
+
+            if(task == null) return new JObject { { "result", false } };
+            //check access
+            if (await haveAccessToTask(user.UserId, parentId) == false) return new JObject { { "result", false } };
+
+            task.Deleted = true;
+            await _context.SaveChangesAsync();
+
+            return new JObject { { "result", true } };
+        }
+
+
         public async Task<JObject> HaveChild(Session user,Guid taskId)
         {
             // check accessibility
             //return await HaveAccessToSubTaskAsync(taskId, user.UserId) == false ?
                 //new JObject { { "result", false } } :
-                return new JObject { { "result", await _context.Tasks.AnyAsync(t => t.ParentId == taskId) } };
+                return new JObject { { "result", await _context.Tasks.AnyAsync(t => t.ParentId == taskId && t.Deleted == false) } };
         }
     }
 }

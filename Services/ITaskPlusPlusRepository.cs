@@ -23,7 +23,7 @@ namespace TaskPlusPlus.API.Services
 
         Task<JObject> HaveChild(Session user,Guid taskId);
 
-        
+        Task<JObject> DeleteTaskAsync(string accessToken, Guid parentId);
 
     }
 }
