@@ -21,9 +21,16 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> AddSubTaskAsync(string accessToken, Guid parentId, string caption);
         Task<JObject> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star);
 
-        Task<JObject> HaveChild(Session user,Guid taskId);
-
         Task<JObject> DeleteTaskAsync(string accessToken, Guid parentId);
+
+        Task<JObject> AddCommentAsync(string accessToken, Guid parentId, string text);
+
+
+        Task<string> GetCommentsAsync(string accessToken, Guid parentId);
+
+        Task<JObject> EditCommentAsync(string accessToken, Guid parentId, Guid commentId, string text);
+
+        Task<JObject> DeleteCommentAsync(string accessToken, Guid parentId, Guid commentId);
 
     }
 }

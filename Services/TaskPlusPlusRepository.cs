@@ -207,23 +207,20 @@ namespace TaskPlusPlus.API.Services
                           task.Caption,
                           task.Star,
                           task.CreationAt,
-                          task.Deleted
+             
                       };
 
             var jsonData = new JArray();
             foreach (var item in res)
             {
-                if(item.Deleted == false)
-                {
                     jsonData.Add(new JObject
                     {
                         {"id", item.Id },
                         {"caption",  item.Caption },
                         {"star",  item.Star },
                         {"creationAt",  item.CreationAt },
-                        { "haveChild", HaveChild(user,item.Id).Result["result"] },
+                        { "haveChild", (await HaveChild(item.Id))["result"] },
                     });
-                }
             }
             return jsonData.ToString();
         }
@@ -360,6 +357,9 @@ namespace TaskPlusPlus.API.Services
                 return await _context.SharedBoards.AnyAsync(s => s.BoardId == board.Id && s.ShareTo == userId);
         }
 
+
+
+
         public async Task<JObject> DeleteTaskAsync(string accessToken,Guid parentId)
         {
             var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
@@ -377,12 +377,127 @@ namespace TaskPlusPlus.API.Services
         }
 
 
-        public async Task<JObject> HaveChild(Session user,Guid taskId)
+        private async Task<JObject> HaveChild(Guid taskId)
         {
             // check accessibility
             //return await HaveAccessToSubTaskAsync(taskId, user.UserId) == false ?
                 //new JObject { { "result", false } } :
                 return new JObject { { "result", await _context.Tasks.AnyAsync(t => t.ParentId == taskId && t.Deleted == false) } };
+        }
+
+
+        public async Task<JObject> AddCommentAsync(string accessToken,Guid parentId,string text)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+
+            if (await haveAccessToTask(user.UserId, parentId) == false) return new JObject { { "result", false } };
+
+
+
+            var comment = new Entities.Comment()
+            {
+
+                Id = Guid.NewGuid(),
+                Text = text,
+                Sender = user.UserId,
+                ReplyTo = parentId,
+                CreationDate = DateTime.Now,
+                Deleted = false,
+                EditId = null,
+            };
+
+
+            await _context.Comments.AddAsync(comment);
+            await _context.SaveChangesAsync();
+
+            return new JObject { { "result", true } };
+        }
+
+
+        public async Task<string> GetCommentsAsync(string accessToken,Guid parentId)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+
+
+            if (await haveAccessToTask(user.UserId, parentId) == false) return new JObject { { "result", false } }.ToString();
+
+            var res = from comment in _context.Comments
+                      .Where(c => c.ReplyTo == parentId && c.Deleted == false && c.EditId == "0").OrderBy(c => c.CreationDate)
+                      select new
+                      {
+                          comment.Id,
+                          comment.Text,
+                          comment.Sender,
+                          comment.CreationDate,
+                      };
+
+            var jsonData = new JArray();
+            foreach (var item in res)
+            {
+                jsonData.Add(new JObject
+                    {
+                        {"id", item.Id },
+                        {"text",  item.Text },
+                        {"creationAt",  item.CreationDate },
+                        { "sender",(await GetFirstNameOf(user.UserId)).ToString() },
+                    });
+            }
+            return jsonData.ToString();
+        }
+
+
+        private async Task<string> GetFirstNameOf(Guid userId)
+        {
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == userId);
+
+
+            return user.FirstName;
+        }
+
+
+        public async Task<JObject> EditCommentAsync(string accessToken,Guid parentId, Guid commentId,string text)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+
+            if (await haveAccessToTask(user.UserId, parentId) == false) return new JObject { { "result", false } };
+
+
+            //find comment => create new comment => change edit id value tp new comment id => save data base
+
+            var oldComment = await _context.Comments.SingleOrDefaultAsync(c => c.Id == commentId);
+
+            var comment = new Entities.Comment()
+            {
+                Id = Guid.NewGuid(),
+                Text = text,
+                Sender = user.UserId,
+                ReplyTo = parentId,
+                CreationDate = oldComment.CreationDate,
+                Deleted = false,
+                EditId = "0",
+            };
+
+            oldComment.EditId = comment.Id.ToString();
+
+            await _context.Comments.AddAsync(comment);
+            await _context.SaveChangesAsync();
+
+            return new JObject { { "result", true } };
+        }
+
+        public async Task<JObject> DeleteCommentAsync(string accessToken,Guid parentId,Guid commentId)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+
+            if (await haveAccessToTask(user.UserId, parentId) == false) return new JObject { { "result", false } };
+
+            var comment = await _context.Comments.SingleOrDefaultAsync(c => c.Id == commentId);
+
+            comment.Deleted = true;
+
+            await _context.SaveChangesAsync();
+
+            return new JObject { { "result", true } };
         }
     }
 }

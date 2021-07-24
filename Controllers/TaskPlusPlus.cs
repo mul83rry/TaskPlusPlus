@@ -111,5 +111,44 @@ namespace TaskPlusPlus.API.Controllers
             return Ok(data.ToString());
         }
 
+
+        [HttpGet]
+        [Route("comment/add/{accessToken}/{parentId:guid}/{text}")]
+
+        public async Task<IActionResult> AddCommentAsync(string accessToken, Guid parentId, string text)
+        {
+            var data = await _taskPlusPlusRepository.AddCommentAsync(accessToken, parentId, text);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("comment/get/{accessToken}/{parentId:guid}")]
+
+        public async Task<IActionResult> GetCommentsAsync(string accessToken, Guid parentId)
+        {
+            var data = await _taskPlusPlusRepository.GetCommentsAsync(accessToken, parentId);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("comment/edit/{accessToken}/{parentId:guid}/{commentId:guid}/{text}")]
+
+        public async Task<IActionResult> EditCommentAsync(string accessToken,Guid parentId, Guid commentId, string text)
+        {
+            var data = await _taskPlusPlusRepository.EditCommentAsync(accessToken, parentId, commentId, text);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("comment/delete/{accessToken}/{parentId:guid}/{commentId:guid}")]
+        
+        public async Task<IActionResult> DeleteCommentAsync(string accessToken,Guid parentId,Guid commentId)
+        {
+            var data = await _taskPlusPlusRepository.DeleteCommentAsync(accessToken, parentId, commentId);
+            return Ok(data.ToString());
+        }
     }
 }

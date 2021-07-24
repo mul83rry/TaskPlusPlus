@@ -15,13 +15,21 @@ namespace TaskPlusPlus.API.Entities
         public string Text { get; set; }
 
         [Required]
-        public int Sender { get; set; }
+        public Guid Sender { get; set; }
+
 
         [Required]
         public Guid ReplyTo { get; set; }
 
         [Required]
         public DateTime CreationDate { get; set; }
+
+        [Required]
+        public string EditId { get; set; }
+
+
+        [Required]
+        public bool Deleted { get; set; }
 
     }
 }
