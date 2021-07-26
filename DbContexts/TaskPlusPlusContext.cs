@@ -21,6 +21,8 @@ namespace TaskPlusPlus.API.DbContexts
         public DbSet<AssignTo> AssignTos { get; set; }
         public DbSet<Tag> Tags { get; set; }
 
+        public DbSet<FriendList> FriendLists { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Board>().HasIndex(u => u.Id).IsUnique();
@@ -33,6 +35,7 @@ namespace TaskPlusPlus.API.DbContexts
             modelBuilder.Entity<User>().HasIndex(u => u.Id).IsUnique();
             modelBuilder.Entity<AssignTo>().HasIndex(u => u.Id).IsUnique();
             modelBuilder.Entity<Tag>().HasIndex(u => u.Id).IsUnique();
+            modelBuilder.Entity<FriendList>().HasIndex(u => u.Id).IsUnique();
             //modelBuilder.Entity<User>().HasIndex(u => u.PhoneNumber).IsUnique();
 
             modelBuilder.Entity<Board>().Property(p => p.Deleted).HasDefaultValue(false);
@@ -43,6 +46,7 @@ namespace TaskPlusPlus.API.DbContexts
             modelBuilder.Entity<Task>().Property(p => p.Deleted).HasDefaultValue(false);
             modelBuilder.Entity<Task>().Property(p => p.Star).HasDefaultValue(false);
             modelBuilder.Entity<Task>().Property(p => p.CreationAt).HasDefaultValue(DateTime.Now);
+            modelBuilder.Entity<FriendList>().Property(p => p.Accepted).HasDefaultValue(false);
 
             // seed the database with dummy data
             /*modelBuilder.Entity<User>().HasData(

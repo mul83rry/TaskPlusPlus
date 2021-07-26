@@ -403,7 +403,7 @@ namespace TaskPlusPlus.API.Services
                 ReplyTo = parentId,
                 CreationDate = DateTime.Now,
                 Deleted = false,
-                EditId = null,
+                EditId = "0",
             };
 
 
