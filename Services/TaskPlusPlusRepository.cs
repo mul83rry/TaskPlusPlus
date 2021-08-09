@@ -439,19 +439,19 @@ namespace TaskPlusPlus.API.Services
                         {"id", item.Id },
                         {"text",  item.Text },
                         {"creationAt",  item.CreationDate },
-                        { "sender",(await GetFirstNameOf(user.UserId)).ToString() },
+                        { "sender",(await GetUser(item.Sender)).FirstName.ToString() },
                     });
             }
             return jsonData.ToString();
         }
 
 
-        private async Task<string> GetFirstNameOf(Guid userId)
+        private async Task<User> GetUser(Guid userId)
         {
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == userId);
 
 
-            return user.FirstName;
+            return user;
         }
 
 
@@ -496,6 +496,191 @@ namespace TaskPlusPlus.API.Services
             comment.Deleted = true;
 
             await _context.SaveChangesAsync();
+
+            return new JObject { { "result", true } };
+        }
+
+
+        public async Task<JObject> AddFriendAsync(string accessToken, string phoneNumber)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+
+            var friendUser = await _context.Users.SingleOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+
+            if (friendUser == null) return new JObject { { "result", false } };
+
+            if(friendUser.Id == user.UserId) return new JObject { { "result", false } };
+
+            // if already there is an active request between these two return false
+            if (await _context.FriendLists.AnyAsync(f => (f.From == user.UserId &&  f.To == friendUser.Id && (!f.Removed && f.Accepted || f.Pending)) || (f.To == user.UserId && f.From == friendUser.Id && (!f.Removed && f.Accepted || f.Pending)))) return new JObject { { "result", false } };
+
+            var friend = new Entities.FriendList()
+            {
+                Id = Guid.NewGuid(),
+                From = user.UserId,
+                To = friendUser.Id,
+                Pending = true,
+                Accepted = false,
+                RequestDate = DateTime.Now,
+                Removed = false
+            };
+
+
+            await _context.FriendLists.AddAsync(friend);
+            await _context.SaveChangesAsync();
+
+            return new JObject { { "result", true } };
+        }
+
+
+        public async Task<string> GetFriendsListAsync(string accessToken)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+
+            var res = from FList in _context.FriendLists.Where(f => (user.UserId == f.From || user.UserId == f.To) && !f.Pending && f.Accepted && !f.Removed).OrderBy(f => f.RequestDate)
+                      select new
+                      {
+                          FList.From,
+                          FList.To,
+                          FList.Id
+                      };
+
+            var jsonData = new JArray();
+
+            foreach (var item in res)
+            {
+                User userDetail = null;
+
+                if(item.From == user.UserId)
+                {
+                    userDetail = await GetUser(item.To);
+                }
+
+                if(item.To == user.UserId)
+                {
+                    userDetail = await GetUser(item.From);
+                }
+
+
+                jsonData.Add(new JObject
+                    {
+                        {"Id", item.Id},
+                        {"firstName", userDetail.FirstName },
+                        {"lastName", userDetail.LastName},
+                        {"phoneNumber", userDetail.PhoneNumber}
+                    });
+            }
+
+
+            return jsonData.ToString();
+        }
+
+
+        public async Task<string> GetFriendRequestQueueAsync(string accessToken)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+
+            var res = from FList in _context.FriendLists.Where(f => user.UserId == f.To && f.Pending).OrderBy(f => f.RequestDate)
+                      select new
+                      {
+                          FList.From,
+                          FList.Id
+                      };
+
+            var jsonData = new JArray();
+
+            
+
+            foreach (var item in res)
+            {
+                var userDetail = await GetUser(item.From);
+                jsonData.Add(new JObject
+                    {
+                        {"Id", item.Id},
+                        {"firstName", userDetail.FirstName },
+                        {"lastName", userDetail.LastName},
+                    });
+            }
+
+
+            return jsonData.ToString();
+        }
+
+        public async Task<JObject> ApplyFriendRequestAsync(string accessToken, Guid requestId, bool reply)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+
+            var request = await _context.FriendLists.SingleOrDefaultAsync(f => f.Id == requestId);
+
+            if (user.UserId != request.To) return new JObject { { "result", false } };
+
+            if(!request.Pending) return new JObject { { "result", false } };
+
+
+
+
+
+            request.Pending = false;
+            request.Accepted = reply;
+
+            await _context.SaveChangesAsync();
+
+            return new JObject { { "result", true } };
+        }
+
+
+        public async Task<JObject> RemoveFriendAsync(string accessToken,Guid requestId)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+
+            var request = await _context.FriendLists.SingleOrDefaultAsync(f => f.Id == requestId);
+
+            if(request.From != user.UserId && request.To != user.UserId) return new JObject { { "result", false } };
+
+
+            request.Removed = true;
+
+            await _context.SaveChangesAsync();
+
+            return new JObject { { "result", true } };
+        }
+
+        public async Task<JObject> ShareBoardAsync(string accessToken,Guid boardId,string shareToList)
+        {
+            var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
+
+            var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
+
+            if (board == null) return new JObject { { "result", false } };
+
+            if(user.UserId != board.CreatorId) return new JObject { { "result", false } };
+
+            var shareToArray = shareToList.Split(',');
+
+            foreach(var item in shareToArray)
+            {
+                if(item != "")
+                {
+                    var friend = await _context.Users.SingleOrDefaultAsync(u => u.PhoneNumber == item);
+                    var shareTo = friend.Id;
+
+                    if (!(await _context.FriendLists.AnyAsync(f => (f.From == user.UserId && f.To == shareTo && !f.Pending && !f.Removed && f.Accepted) || (f.To == user.UserId && f.From == shareTo && !f.Pending && !f.Removed && f.Accepted))))
+                        return new JObject { { "result", false } };
+
+                    var share = new Entities.SharedBoard()
+                    {
+                        Id = Guid.NewGuid(),
+                        BoardId = boardId,
+                        ShareTo = shareTo,
+                        GrantedAccessAt = DateTime.Now,
+                    };
+
+                    await _context.SharedBoards.AddAsync(share);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
 
             return new JObject { { "result", true } };
         }

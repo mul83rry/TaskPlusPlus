@@ -32,5 +32,18 @@ namespace TaskPlusPlus.API.Services
 
         Task<JObject> DeleteCommentAsync(string accessToken, Guid parentId, Guid commentId);
 
+        Task<JObject> AddFriendAsync(string accessToken, string phoneNumber);
+
+        Task<string> GetFriendsListAsync(string accessToken);
+
+        Task<string> GetFriendRequestQueueAsync(string accessToken);
+
+        Task<JObject> ApplyFriendRequestAsync(string accessToken, Guid requestId, bool reply);
+
+
+        Task<JObject> RemoveFriendAsync(string accessToken, Guid requestId);
+
+
+        Task<JObject> ShareBoardAsync(string accessToken,Guid boardId,string shareToList);
     }
 }

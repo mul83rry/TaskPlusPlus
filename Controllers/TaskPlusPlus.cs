@@ -150,5 +150,63 @@ namespace TaskPlusPlus.API.Controllers
             var data = await _taskPlusPlusRepository.DeleteCommentAsync(accessToken, parentId, commentId);
             return Ok(data.ToString());
         }
+
+
+        [HttpGet]
+        [Route("friend/add/{accessToken}/{phoneNumber}")]
+
+        public async Task<IActionResult> AddFriendAsync(string accessToken, string phoneNumber)
+        {
+            var data = await _taskPlusPlusRepository.AddFriendAsync(accessToken, phoneNumber);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("friend/get/{accessToken}")]
+
+        public async Task<IActionResult> GetFriendListAsync(string accessToken)
+        {
+            var data = await _taskPlusPlusRepository.GetFriendsListAsync(accessToken);
+            return Ok(data.ToString());
+        }
+
+        [HttpGet]
+        [Route("friend/requests/get/{accessToken}")]
+
+        public async Task<IActionResult> GetFriendsRequestQueueAsync(string accessToken)
+        {
+            var data = await _taskPlusPlusRepository.GetFriendRequestQueueAsync(accessToken);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("friend/apply/{accessToken}/{requestId:guid}/{reply:bool}")]
+
+        public async Task<IActionResult> ApplyFriendRequestAsync(string accessToken, Guid requestId,bool reply)
+        {
+            var data = await _taskPlusPlusRepository.ApplyFriendRequestAsync(accessToken,requestId,reply);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("friend/remove/{accessToken}/{requestId:guid}")]
+
+        public async Task<IActionResult> RemoveFriendAsync(string accessToken, Guid requestId)
+        {
+            var data = await _taskPlusPlusRepository.RemoveFriendAsync(accessToken, requestId);
+            return Ok(data.ToString());
+        }
+
+        [HttpGet]
+        [Route("board/share/{accessToken}/{boardId:guid}/{shareToList}")]
+
+        public async Task<IActionResult> ShareBoardAsync(string accessToken,Guid boardId,string shareToList)
+        {
+            var data = await _taskPlusPlusRepository.ShareBoardAsync(accessToken, boardId, shareToList);
+            return Ok(data.ToString());
+        }
     }
 }

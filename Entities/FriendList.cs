@@ -23,5 +23,12 @@ namespace TaskPlusPlus.API.Entities
 
         [Required]
         public bool Accepted { get; set; }
+
+
+        [Required]
+        public bool Removed { get; set; }
+
+        [Required]
+        public DateTime RequestDate { get; set; }
     }
 }
