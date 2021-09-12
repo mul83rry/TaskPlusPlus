@@ -22,6 +22,9 @@ namespace TaskPlusPlus.API.Entities
         public Guid ReplyTo { get; set; }
 
         [Required]
+        public Guid LastModifiedBy { get; set; }
+
+        [Required]
         public DateTime CreationDate { get; set; }
 
         [Required]

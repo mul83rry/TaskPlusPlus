@@ -20,8 +20,15 @@ namespace TaskPlusPlus.API.DbContexts
         public DbSet<SharedBoard> SharedBoards { get; set; }
         public DbSet<AssignTo> AssignTos { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<TagsList> TagsList { get; set; }
 
         public DbSet<FriendList> FriendLists { get; set; }
+
+        public DbSet<RolesTagList> RolesTagList { get; set; }
+
+        public DbSet<Roles> Roles { get; set; }
+
+        public DbSet<RoleSession> RoleSessions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

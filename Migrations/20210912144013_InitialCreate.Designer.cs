@@ -10,8 +10,8 @@ using TaskPlusPlus.API.DbContexts;
 namespace TaskPlusPlus.API.Migrations
 {
     [DbContext(typeof(TaskPlusPlusContext))]
-    [Migration("20210726092801_migration")]
-    partial class migration
+    [Migration("20210912144013_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -54,7 +54,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 7, 26, 13, 58, 1, 128, DateTimeKind.Local).AddTicks(721));
+                        .HasDefaultValue(new DateTime(2021, 9, 12, 19, 10, 12, 348, DateTimeKind.Local).AddTicks(3446));
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uniqueidentifier");
@@ -87,6 +87,9 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<string>("EditId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("LastModifiedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ReplyTo")
                         .HasColumnType("uniqueidentifier");
@@ -159,6 +162,84 @@ namespace TaskPlusPlus.API.Migrations
                     b.ToTable("FriendLists");
                 });
 
+            modelBuilder.Entity("TaskPlusPlus.API.Entities.RoleSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AsignDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("BoardId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Demoted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RoleSessions");
+                });
+
+            modelBuilder.Entity("TaskPlusPlus.API.Entities.Roles", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BoardId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Caption")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("CommentRead")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CommentWrite")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TaskRead")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TaskWrite")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("TaskPlusPlus.API.Entities.RolesTagList", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RolesTagList");
+                });
+
             modelBuilder.Entity("TaskPlusPlus.API.Entities.Session", b =>
                 {
                     b.Property<Guid>("Id")
@@ -173,7 +254,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 7, 26, 13, 58, 1, 132, DateTimeKind.Local).AddTicks(7321));
+                        .HasDefaultValue(new DateTime(2021, 9, 12, 19, 10, 12, 352, DateTimeKind.Local).AddTicks(4855));
 
                     b.Property<bool>("IsValid")
                         .HasColumnType("bit");
@@ -207,7 +288,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("GrantedAccessAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 7, 26, 13, 58, 1, 132, DateTimeKind.Local).AddTicks(4970));
+                        .HasDefaultValue(new DateTime(2021, 9, 12, 19, 10, 12, 352, DateTimeKind.Local).AddTicks(2734));
 
                     b.Property<Guid>("ShareTo")
                         .HasColumnType("uniqueidentifier");
@@ -232,12 +313,41 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<string>("Caption")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Id")
                         .IsUnique();
 
                     b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("TaskPlusPlus.API.Entities.TagsList", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AsignDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TagsList");
                 });
 
             modelBuilder.Entity("TaskPlusPlus.API.Entities.Task", b =>
@@ -252,12 +362,18 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 7, 26, 13, 58, 1, 132, DateTimeKind.Local).AddTicks(9841));
+                        .HasDefaultValue(new DateTime(2021, 9, 12, 19, 10, 12, 352, DateTimeKind.Local).AddTicks(7293));
+
+                    b.Property<Guid>("Creator")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("Deleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
+
+                    b.Property<Guid>("LastModifiedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ParentId")
                         .HasColumnType("uniqueidentifier");
@@ -298,7 +414,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("SignupDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 7, 26, 13, 58, 1, 132, DateTimeKind.Local).AddTicks(6116));
+                        .HasDefaultValue(new DateTime(2021, 9, 12, 19, 10, 12, 352, DateTimeKind.Local).AddTicks(3809));
 
                     b.HasKey("Id");
 

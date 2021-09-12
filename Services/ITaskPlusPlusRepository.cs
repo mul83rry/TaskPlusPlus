@@ -45,5 +45,29 @@ namespace TaskPlusPlus.API.Services
 
 
         Task<JObject> ShareBoardAsync(string accessToken,Guid boardId,string shareToList);
+
+        Task<JObject> AddTagAsync(string accessToken, Guid boardId, string caption);
+
+        Task<string> GetTagListAsync(string accessToken, Guid parentId);
+
+        Task<JObject> RemoveTagAsync(string accessToken, Guid boardId, Guid tagId);
+
+        Task<JObject> AsignTagToTaskAsync(string accessToken, Guid taskId, Guid tagId);
+
+        Task<JObject> RemoveTagFromTaskAsync(string accessToken, Guid taskId, Guid taskTagId);
+
+        Task<JObject> AddRoleAsync(string accessToken, Guid boardId, string caption, bool readTask, bool writeTask, bool readComment, bool writeComment, string tagList);
+
+        Task<string> GetBoardRolesAsync(string accessToken, Guid boardId);
+
+        Task<JObject> AsignRoleToEmployeesAsync(string accessToken, Guid boardId, Guid RoleId, Guid EmployeesId);
+
+        Task<JObject> RemoveRoleFromBoardAsync(string accessToken, Guid boardId, Guid roleId);
+
+        Task<JObject> DemoteEmployeesAsync(string accessToken, Guid boardId, Guid roleSessionId);
+
+        Task<string> GetEmployeesRolesAsync(string accessToken, Guid boardId);
+
+        Task<string> GetEmployeesAsync(string accessToken, Guid boardId);
     }
 }

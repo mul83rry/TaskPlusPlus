@@ -12,5 +12,7 @@ namespace TaskPlusPlus.API.Entities
         public Guid Id { get; set; }
         public Guid BoardId { get; set; }
         public string Caption { get; set; }
+        public bool Removed { get; set; }
+        public DateTime CreationDate { get; set; }
     }
 }

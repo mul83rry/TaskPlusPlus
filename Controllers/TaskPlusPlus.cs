@@ -208,5 +208,124 @@ namespace TaskPlusPlus.API.Controllers
             var data = await _taskPlusPlusRepository.ShareBoardAsync(accessToken, boardId, shareToList);
             return Ok(data.ToString());
         }
+
+
+
+        [HttpGet]
+        [Route("board/tag/add/{accessToken}/{boardId:guid}/{caption}")]
+
+
+        public async Task<IActionResult> AddTagAsync(string accessToken,Guid boardId,string caption)
+        {
+            var data = await _taskPlusPlusRepository.AddTagAsync(accessToken, boardId, caption);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("board/tag/get/{accessToken}/{parentId:guid}")]
+
+        public async Task<IActionResult> GetTagListAsync(string accessToken, Guid parentId)
+        {
+            var data = await _taskPlusPlusRepository.GetTagListAsync(accessToken, parentId);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("task/tag/add/{accessToken}/{taskId:guid}/{tagId:guid}")]
+
+        public async Task<IActionResult> AsignTagToTaskAsync(string accessToken,Guid taskId,Guid tagId)
+        {
+            var data = await _taskPlusPlusRepository.AsignTagToTaskAsync(accessToken, taskId, tagId);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("task/tag/remove/{accessToken}/{taskId:guid}/{taskTagId:guid}")]
+
+        public async Task<IActionResult> RemoveTagFromTaskAsync(string accessToken, Guid taskId, Guid taskTagId)
+        {
+            var data = await _taskPlusPlusRepository.RemoveTagFromTaskAsync(accessToken, taskId, taskTagId);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("board/role/add/{accessToken}/{boardId:guid}/{caption}/{readTask:bool}/{writeTask:bool}/{readComment:bool}/{writeComment:bool}/{tagList}")]
+
+        public async Task<IActionResult> AddRoleAsync(string accessToken, Guid boardId, string caption, bool readTask, bool writeTask, bool readComment, bool writeComment, string tagList)
+        {
+            var data = await _taskPlusPlusRepository.AddRoleAsync(accessToken, boardId, caption, readTask, writeTask, readComment, writeComment, tagList);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("board/role/get/{accessToken}/{boardId:guid}")]
+
+        public async Task<IActionResult> GetBoardRolesAsync(string accessToken, Guid boardId)
+        {
+            var data = await _taskPlusPlusRepository.GetBoardRolesAsync(accessToken, boardId);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("board/role/user/add/{accessToken}/{boardId:guid}/{roleId:guid}/{employeesId:guid}")]
+
+        public async Task<IActionResult> AsignRoleToEmployeesAsync(string accessToken, Guid boardId, Guid roleId,Guid employeesId)
+        {
+            var data = await _taskPlusPlusRepository.AsignRoleToEmployeesAsync(accessToken, boardId, roleId, employeesId);
+            return Ok(data.ToString());
+        }
+
+        [HttpGet]
+        [Route("board/role/user/demote/{accessToken}/{boardId:guid}/{roleSessionId:guid}")]
+
+        public async Task<IActionResult> DemoteEmployeesAsync(string accessToken, Guid boardId, Guid roleSessionId)
+        {
+            var data = await _taskPlusPlusRepository.DemoteEmployeesAsync(accessToken, boardId, roleSessionId);
+            return Ok(data.ToString());
+        }
+
+        [HttpGet]
+        [Route("board/tag/remove/{accessToken}/{boardId:guid}/{tagId:guid}")]
+
+        public async Task<IActionResult> RemoveTagAsync(string accessToken, Guid boardId, Guid tagId)
+        {
+            var data = await _taskPlusPlusRepository.RemoveTagAsync(accessToken, boardId, tagId);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("board/role/remove/{accessToken}/{boardId:guid}/{roleId:guid}")]
+
+        public async Task<IActionResult> RemoveRoleFromBoardAsync(string accessToken, Guid boardId, Guid roleId)
+        {
+            var data = await _taskPlusPlusRepository.RemoveRoleFromBoardAsync(accessToken, boardId, roleId);
+            return Ok(data.ToString());
+        }
+
+        [HttpGet]
+        [Route("board/role/user/get/{accessToken}/{boardId:guid}")]
+
+        public async Task<IActionResult> GetEmployeesRolesAsync(string accessToken, Guid boardId)
+        {
+            var data = await _taskPlusPlusRepository.GetEmployeesRolesAsync(accessToken, boardId);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpGet]
+        [Route("board/employees/get/{accessToken}/{boardId:guid}")]
+
+        public async Task<IActionResult> GetEmployeesAsync(string accessToken, Guid boardId)
+        {
+            var data = await _taskPlusPlusRepository.GetEmployeesAsync(accessToken, boardId);
+            return Ok(data.ToString());
+        }
     }
 }

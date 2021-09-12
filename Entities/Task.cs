@@ -15,6 +15,12 @@ namespace TaskPlusPlus.API.Entities
         [Required]
         public bool Star { get; set; }
 
+        [Required]
+        public Guid Creator { get; set; }
+
+        [Required]
+        public Guid LastModifiedBy { get; set; }
+
         public Guid ParentId { get; set; }
 
         [Required]
