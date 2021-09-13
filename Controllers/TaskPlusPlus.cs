@@ -286,7 +286,7 @@ namespace TaskPlusPlus.API.Controllers
 
         public async Task<IActionResult> DemoteEmployeesAsync(string accessToken, Guid boardId, Guid roleSessionId)
         {
-            var data = await _taskPlusPlusRepository.DemoteEmployeesAsync(accessToken, boardId, roleSessionId);
+            var data = await _taskPlusPlusRepository.DemoteEmployeesRoleAsync(accessToken, boardId, roleSessionId);
             return Ok(data.ToString());
         }
 

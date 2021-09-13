@@ -56,7 +56,7 @@ namespace TaskPlusPlus.API.Services
         Task<string> GetBoardRolesAsync(string accessToken, Guid boardId);
         Task<JObject> AsignRoleToEmployeesAsync(string accessToken, Guid boardId, Guid RoleId, Guid EmployeesId);
         Task<JObject> RemoveRoleFromBoardAsync(string accessToken, Guid boardId, Guid roleId);
-        Task<JObject> DemoteEmployeesAsync(string accessToken, Guid boardId, Guid roleSessionId);
+        Task<JObject> DemoteEmployeesRoleAsync(string accessToken, Guid boardId, Guid roleSessionId);
         Task<string> GetEmployeesRolesAsync(string accessToken, Guid boardId);
         Task<string> GetEmployeesAsync(string accessToken, Guid boardId);
         #endregion
