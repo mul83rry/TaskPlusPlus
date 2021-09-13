@@ -730,13 +730,12 @@ namespace TaskPlusPlus.API.Services
         {
             var user = await GetUserSessionAsync(accessToken) ?? throw new NullReferenceException();
 
-            var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
+            var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == boardId && b.CreatorId == user.UserId);
 
             
 
             if (board == null) return new JObject { { "result", false } };
 
-            if (user.UserId != board.CreatorId) return new JObject { { "result", false } };
 
             var shareToArray = shareToList.Split(',');
 
@@ -1101,9 +1100,11 @@ namespace TaskPlusPlus.API.Services
 
             if (!(await IsOwner(user.UserId, boardId))) return new JObject { { "result", false } };
 
-            if (!(await _context.RoleSessions.AnyAsync(r => r.Id == roleSessionId))) return new JObject { { "result", false } };
+            var roleSession = await _context.RoleSessions.SingleOrDefaultAsync(r => r.Id == roleSessionId && !r.Demoted);
 
-            var roleSession = await _context.RoleSessions.SingleOrDefaultAsync(r => r.Id == roleSessionId);
+            if (roleSession == null) return new JObject { { "result", false } };
+
+            
 
             roleSession.Demoted = true;
 
