@@ -123,7 +123,7 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-        public async Task<JObject> SigninAsync(string phoneNumber) // todo: edit need
+        public async Task<JObject> SigninAsync(string phoneNumber)
         {
             if (!await context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
                 return JsonMap.FalseResultWithEmptyAccessToken;
@@ -143,9 +143,9 @@ namespace TaskPlusPlus.API.Services
 
             await context.Sessions.AddAsync(newSession);
             await context.SaveChangesAsync();
-            return new JObject { { "result", true }, { "accessCode", newSession.AccessToken } };
+            return JsonMap.GetSuccesfullAccessToken(newSession.AccessToken);
         }
-        
+
         public async Task<JObject> SignUpAsync(string firstName, string lastName, string phoneNumber)
         {
             if (await context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
@@ -183,9 +183,9 @@ namespace TaskPlusPlus.API.Services
             var isOwner = await IsOwner(user.UserId, parentId);
 
             var jsonData = new JArray();
-
+            // todo: switch to signalR
             if (!(await HaveAccessToTask(user.UserId, boardId))) return jsonData.ToString();
-            if (!isOwner && !await HasRoleAccess(Permissions.readTask, boardId, user.UserId)) return jsonData.ToString();
+            if (!isOwner && !await HasRoleAccess(boardId, user.UserId, Permissions.readTask)) return jsonData.ToString();
 
 
             var res = from task in context.Tasks
@@ -212,7 +212,7 @@ namespace TaskPlusPlus.API.Services
                         {"star",  item.Star },
                         {"creationAt",  item.CreationAt },
                         {"haveChild", (await HaveChild(item.Id))["result"] },
-                        { "lastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName.ToString()},
+                        {"lastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName.ToString()},
                         {"tags", (await GetTaskTagListAsync(item.Id))}
                     });
             }
@@ -222,10 +222,9 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> AddTaskAsync(string accessToken, Guid parentId, string caption)
         {
             var user = await GetUserSessionAsync(accessToken);
-            var board = await context.Boards.SingleOrDefaultAsync(b => b.Id == parentId);
+            var board = await context.Boards.SingleAsync(b => b.Id == parentId);
             var isOwner = await IsOwner(user.UserId, parentId);
 
-            if (board == null) return JsonMap.FalseResult;
 
             // check accessibility
             if (!await HaveAccessToTask(user.UserId, parentId)) return JsonMap.FalseResult;
@@ -283,7 +282,9 @@ namespace TaskPlusPlus.API.Services
         {
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwner(user.UserId, parentId);
-            var task = await context.Tasks.SingleAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
+            var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
+
+            if (task == null) return JsonMap.FalseResult;
 
             // check accessibility
             if (!await HaveAccessToTask(user.UserId, parentId)) return JsonMap.FalseResult;
@@ -301,7 +302,9 @@ namespace TaskPlusPlus.API.Services
         {
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwner(user.UserId, parentId);
-            var task = await context.Tasks.SingleAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
+            var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
+
+            if (task == null) return JsonMap.FalseResult;
 
             if (!await HaveAccessToTask(user.UserId, parentId)) return JsonMap.FalseResult;
             if (!isOwner && !await HasPermissions(user.UserId, parentId, Permissions.writeTask)) return JsonMap.FalseResult;
@@ -504,12 +507,12 @@ namespace TaskPlusPlus.API.Services
         {
             var user = await GetUserSessionAsync(accessToken);
 
-            var res = from FList in context.FriendLists.Where(f => (user.UserId == f.From || user.UserId == f.To) && !f.Pending && f.Accepted && !f.Removed).OrderBy(f => f.RequestDate)
+            var res = from friendsList in context.FriendLists.Where(f => (user.UserId == f.From || user.UserId == f.To) && f.Accepted && !f.Removed).OrderBy(f => f.RequestDate)
                       select new
                       {
-                          FList.From,
-                          FList.To,
-                          FList.Id
+                          friendsList.From,
+                          friendsList.To,
+                          friendsList.Id
                       };
 
             var jsonData = new JArray();
@@ -519,7 +522,7 @@ namespace TaskPlusPlus.API.Services
                 User userDetail = null;
 
                 if (item.From == user.UserId) userDetail = await GetUser(item.To);
-                if (item.To == user.UserId) userDetail = await GetUser(item.From);
+                else if (item.To == user.UserId) userDetail = await GetUser(item.From);
 
                 jsonData.Add(new JObject
                     {
@@ -575,8 +578,9 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> RemoveFriendAsync(string accessToken, Guid requestId)
         {
+            // change user to session
             var user = await GetUserSessionAsync(accessToken);
-            var request = await context.FriendLists.SingleOrDefaultAsync(f => f.Id == requestId);
+            var request = await context.FriendLists.SingleAsync(f => f.Id == requestId);
             if (request.From != user.UserId && request.To != user.UserId) return JsonMap.FalseResult;
 
             request.Removed = true;
@@ -588,32 +592,30 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> ShareBoardAsync(string accessToken, Guid boardId, string shareToList)
         {
             var user = await GetUserSessionAsync(accessToken);
-            var board = await context.Boards.SingleOrDefaultAsync(b => b.Id == boardId && b.CreatorId == user.UserId);
-            if (board == null) return JsonMap.FalseResult;
+            var board = await context.Boards.SingleAsync(b => b.Id == boardId && b.CreatorId == user.UserId);
 
-            var shareToArray = shareToList.Split(',');
-            foreach (var item in shareToArray)
+            var usersNumberToShare = shareToList.Split(',');
+            foreach (var item in usersNumberToShare.Where(i => !string.IsNullOrEmpty(i)))
             {
-                if (item != "")
+                var friend = await context.Users.SingleAsync(u => u.PhoneNumber == item);
+                var shareTo = friend.Id;
+
+                if (await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == shareTo)) continue;
+
+                if (!(await context.FriendLists.AnyAsync(f =>
+                (f.From == user.UserId && f.To == shareTo && !f.Removed && f.Accepted) ||
+                (f.To == user.UserId && f.From == shareTo && !f.Removed && f.Accepted))))
+                    return JsonMap.FalseResult;
+
+                var share = new SharedBoard()
                 {
-                    var friend = await context.Users.SingleOrDefaultAsync(u => u.PhoneNumber == item);
-                    var shareTo = friend.Id;
+                    Id = Guid.NewGuid(),
+                    BoardId = boardId,
+                    ShareTo = shareTo,
+                    GrantedAccessAt = DateTime.Now,
+                };
 
-                    if (!(await context.FriendLists.AnyAsync(f => (f.From == user.UserId && f.To == shareTo && !f.Pending && !f.Removed && f.Accepted) || (f.To == user.UserId && f.From == shareTo && !f.Pending && !f.Removed && f.Accepted))))
-                        return JsonMap.FalseResult;
-
-                    if (await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == shareTo)) continue;
-
-                    var share = new SharedBoard()
-                    {
-                        Id = Guid.NewGuid(),
-                        BoardId = boardId,
-                        ShareTo = shareTo,
-                        GrantedAccessAt = DateTime.Now,
-                    };
-
-                    await context.SharedBoards.AddAsync(share);
-                }
+                await context.SharedBoards.AddAsync(share);
             }
 
             await context.SaveChangesAsync();
@@ -764,9 +766,9 @@ namespace TaskPlusPlus.API.Services
             foreach (var item in tagListArray)
             {
                 if (string.IsNullOrEmpty(item)) continue;
-                if (!(await context.Tags.AnyAsync(t => !t.Removed && t.Id == Guid.Parse(item) && t.BoardId == boardId))) continue;
+                if (!await context.Tags.AnyAsync(t => !t.Removed && t.Id == Guid.Parse(item) && t.BoardId == boardId)) continue;
 
-                var roleTag = new Entities.RolesTagList()
+                var roleTag = new RolesTagList()
                 {
                     Id = Guid.NewGuid(),
                     RoleId = role.Id,
@@ -784,8 +786,8 @@ namespace TaskPlusPlus.API.Services
         public async Task<string> GetBoardRolesAsync(string accessToken, Guid boardId)
         {
             var user = await GetUserSessionAsync(accessToken);
-            var jsonData = new JArray();
 
+            var jsonData = new JArray();
             if (!(await context.SharedBoards.AnyAsync(s => s.ShareTo == user.UserId && s.BoardId == boardId))) return jsonData.ToString();
 
             var res = from roles in context.Roles.Where(r => r.BoardId == boardId && !r.Removed).OrderBy(s => s.CreatedAt)
@@ -974,7 +976,7 @@ namespace TaskPlusPlus.API.Services
         private async Task<bool> HasPermissions(Guid userId, Guid parentId, Permissions permissionType)
         {
             var boardId = await GetBoardIdAsync(parentId);
-            var RoleAccess = await HasRoleAccess(permissionType, boardId, userId);
+            var RoleAccess = await HasRoleAccess(boardId, userId, permissionType);
             var tagAccess = await HasTagAccess(boardId, userId, parentId);
 
             if (!RoleAccess || !tagAccess) return false;
@@ -997,7 +999,7 @@ namespace TaskPlusPlus.API.Services
             return boardId;
         }
 
-        private async Task<bool> HasRoleAccess(Permissions permissionType, Guid boardId, Guid userId)
+        private async Task<bool> HasRoleAccess(Guid boardId, Guid userId, Permissions permissionType)
         {
             var roles = from roleSession in context.RoleSessions.Where(r => !r.Demoted && r.BoardId == boardId && r.UserId == userId)
                         join role in context.Roles on roleSession.RoleId equals role.Id

@@ -13,17 +13,14 @@ namespace TaskPlusPlus.API.Entities
         [Required]
         public Guid From { get; set; }
 
-
         [Required] 
         public Guid To { get; set; }
 
         [Required]
         public bool Pending { get; set; }
 
-
         [Required]
         public bool Accepted { get; set; }
-
 
         [Required]
         public bool Removed { get; set; }

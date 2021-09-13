@@ -10,6 +10,7 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> SignUpAsync(string firstName, string lastName, string phoneNumber);
         Task<JObject> SigninAsync(string phoneNumber);
         #endregion
+
         #region Boards
         Task<string> GetBoardsAsync(string accessToken);
         Task<JObject> AddBoardAsync(string accessToken, string caption);
@@ -42,8 +43,6 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> RemoveFriendAsync(string accessToken, Guid requestId);
         #endregion
 
-
-
         #region Tags
         Task<JObject> AddTagAsync(string accessToken, Guid boardId, string caption);
         Task<string> GetTagListAsync(string accessToken, Guid parentId);
@@ -61,6 +60,5 @@ namespace TaskPlusPlus.API.Services
         Task<string> GetEmployeesRolesAsync(string accessToken, Guid boardId);
         Task<string> GetEmployeesAsync(string accessToken, Guid boardId);
         #endregion
-
     }
 }
