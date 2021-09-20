@@ -27,7 +27,7 @@ namespace TaskPlusPlus.API.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Caption = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 9, 12, 19, 10, 12, 348, DateTimeKind.Local).AddTicks(3446)),
+                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 9, 20, 12, 57, 46, 340, DateTimeKind.Local).AddTicks(5276)),
                     Deleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -138,7 +138,7 @@ namespace TaskPlusPlus.API.Migrations
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AccessToken = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IsValid = table.Column<bool>(type: "bit", nullable: false),
-                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 9, 12, 19, 10, 12, 352, DateTimeKind.Local).AddTicks(4855)),
+                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 9, 20, 12, 57, 46, 345, DateTimeKind.Local).AddTicks(4911)),
                     LastFetchTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -153,7 +153,7 @@ namespace TaskPlusPlus.API.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     BoardId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ShareTo = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    GrantedAccessAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 9, 12, 19, 10, 12, 352, DateTimeKind.Local).AddTicks(2734))
+                    GrantedAccessAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 9, 20, 12, 57, 46, 345, DateTimeKind.Local).AddTicks(2676))
                 },
                 constraints: table =>
                 {
@@ -195,13 +195,14 @@ namespace TaskPlusPlus.API.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Caption = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Caption = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Star = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     Creator = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     LastModifiedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ParentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 9, 12, 19, 10, 12, 352, DateTimeKind.Local).AddTicks(7293)),
-                    Deleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                    CreationAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 9, 20, 12, 57, 46, 345, DateTimeKind.Local).AddTicks(8513)),
+                    Deleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    Compeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -215,7 +216,7 @@ namespace TaskPlusPlus.API.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    SignupDate = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 9, 12, 19, 10, 12, 352, DateTimeKind.Local).AddTicks(3809)),
+                    SignupDate = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2021, 9, 20, 12, 57, 46, 345, DateTimeKind.Local).AddTicks(3803)),
                     PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>

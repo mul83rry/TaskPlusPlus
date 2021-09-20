@@ -105,7 +105,9 @@ namespace TaskPlusPlus.API.Services
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
             if (await HaveAccessToTask(user.UserId, parentId) == false) return JsonMap.FalseResult;
 
-            var comment = await context.Comments.SingleAsync(c => c.Id == commentId && (c.Sender == user.UserId || isOwner));
+            var comment = await context.Comments.SingleOrDefaultAsync(c => c.Id == commentId && (c.Sender == user.UserId || isOwner));
+
+            if (comment == null) return JsonMap.FalseResult;
 
             comment.Deleted = true;
             comment.LastModifiedBy = user.UserId;

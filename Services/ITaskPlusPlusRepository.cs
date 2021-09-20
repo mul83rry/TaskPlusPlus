@@ -25,6 +25,9 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> EditTaskAsync(string accessToken, Guid parentId, string caption, bool star);
         Task<JObject> AddSubTaskAsync(string accessToken, Guid parentId, string caption);
         Task<JObject> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star);
+
+        Task<JObject> CompeleteTaskAsync(string accessToken, Guid parentId);
+
         Task<JObject> DeleteTaskAsync(string accessToken, Guid parentId);
         #endregion
 

@@ -28,7 +28,8 @@ namespace TaskPlusPlus.API.Services
                           task.Caption,
                           task.Star,
                           task.CreationAt,
-                          task.LastModifiedBy
+                          task.LastModifiedBy,
+                          task.Compeleted
                       };
 
             // todo: can be simplest
@@ -45,7 +46,8 @@ namespace TaskPlusPlus.API.Services
                         {"creationAt",  item.CreationAt },
                         {"haveChild", (await HaveChild(item.Id))["result"] },
                         {"lastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName.ToString()},
-                        {"tags", (await GetTaskTagListAsync(item.Id))}
+                        {"tags", (await GetTaskTagListAsync(item.Id))},
+                        {"compeleted" , item.Compeleted}
                     });
             }
             return jsonData.ToString();
@@ -72,7 +74,8 @@ namespace TaskPlusPlus.API.Services
                 CreationAt = DateTime.Now,
                 Deleted = false,
                 Creator = user.UserId,
-                LastModifiedBy = user.UserId
+                LastModifiedBy = user.UserId,
+                Compeleted = false
             };
 
             await context.Tasks.AddAsync(task);
@@ -101,7 +104,8 @@ namespace TaskPlusPlus.API.Services
                 CreationAt = DateTime.Now,
                 Deleted = false,
                 Creator = user.UserId,
-                LastModifiedBy = user.UserId
+                LastModifiedBy = user.UserId,
+                Compeleted = false,
             };
 
             await context.Tasks.AddAsync(subTask);
@@ -125,6 +129,7 @@ namespace TaskPlusPlus.API.Services
             task.Caption = caption;
             task.Star = star;
             task.LastModifiedBy = user.UserId;
+
             await context.SaveChangesAsync();
 
             return JsonMap.TrueResult;
@@ -166,11 +171,27 @@ namespace TaskPlusPlus.API.Services
             return await context.SharedBoards.AnyAsync(s => s.BoardId == board.Id && s.ShareTo == userId);
         }
 
+        public async Task<JObject> CompeleteTaskAsync(string accessToken, Guid parentId)
+        {
+            var user = await GetUserSessionAsync(accessToken);
+            var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
+            var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && isOwner);
+
+            if (task == null) return JsonMap.FalseResult;
+            if (!await HaveAccessToTask(user.UserId, parentId)) return JsonMap.FalseResult;
+
+
+            task.Compeleted = true;
+            await context.SaveChangesAsync();
+
+            return JsonMap.TrueResult;
+        }
+
         public async Task<JObject> DeleteTaskAsync(string accessToken, Guid parentId)
         {
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
-            var task = await context.Tasks.SingleAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
+            var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
 
             if (task == null) return JsonMap.FalseResult;
             if (!await HaveAccessToTask(user.UserId, parentId)) return JsonMap.FalseResult;

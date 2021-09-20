@@ -22,6 +22,7 @@ namespace TaskPlusPlus.API.Entities
         [Required]
         public Guid LastModifiedBy { get; set; }
 
+        [Required]
         public Guid ParentId { get; set; }
 
         [Required]
@@ -29,5 +30,8 @@ namespace TaskPlusPlus.API.Entities
 
         [Required]
         public bool Deleted { get; set; }
+
+        [Required]
+        public bool Compeleted { get; set; }
     }
 }

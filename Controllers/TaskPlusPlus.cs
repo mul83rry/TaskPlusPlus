@@ -103,6 +103,14 @@ namespace TaskPlusPlus.API.Controllers
         }
 
         [HttpGet]
+        [Route("task/compelete/{accessToken}/{parentId:guid}")]
+        public async Task<IActionResult> CompeletTaskAsync(string accessToken, Guid parentId)
+        {
+            var data = await _taskPlusPlusRepository.CompeleteTaskAsync(accessToken, parentId);
+            return Ok(data.ToString());
+        }
+
+        [HttpGet]
         [Route("task/delete/{accessToken}/{parentId:guid}")]
 
         public async Task<IActionResult> DeleteTaskAsync(string accessToken, Guid parentId)
