@@ -99,24 +99,23 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken);
             var board = await context.Boards.SingleAsync(b => b.Id == boardId && b.CreatorId == user.UserId);
 
-            var usersNumberToShare = shareToList.Split(',');
-            foreach (var item in usersNumberToShare.Where(i => !string.IsNullOrEmpty(i)))
+            var usersIdToShare = shareToList.Split(',');
+            foreach (var item in usersIdToShare.Where(i => !string.IsNullOrEmpty(i)))
             {
-                var friend = await context.Users.SingleAsync(u => u.PhoneNumber == item);
-                var shareTo = friend.Id;
+                var friend = await context.Users.SingleAsync(u => u.Id == Guid.Parse(item));
 
-                if (await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == shareTo)) continue;
+                if (await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == friend.Id)) continue;
 
                 if (!(await context.FriendLists.AnyAsync(f =>
-                (f.From == user.UserId && f.To == shareTo && !f.Removed && f.Accepted) ||
-                (f.To == user.UserId && f.From == shareTo && !f.Removed && f.Accepted))))
+                (f.From == user.UserId && f.To == friend.Id && !f.Removed && f.Accepted) ||
+                (f.To == user.UserId && f.From == friend.Id && !f.Removed && f.Accepted))))
                     return JsonMap.FalseResult;
 
                 var share = new SharedBoard()
                 {
                     Id = Guid.NewGuid(),
                     BoardId = boardId,
-                    ShareTo = shareTo,
+                    ShareTo = friend.Id,
                     GrantedAccessAt = DateTime.Now,
                 };
 

@@ -65,7 +65,8 @@ namespace TaskPlusPlus.API.Services
                         {"Id", item.Id},
                         {"firstName", userDetail.FirstName },
                         {"lastName", userDetail.LastName},
-                        {"phoneNumber", userDetail.PhoneNumber}
+                        {"phoneNumber", userDetail.PhoneNumber},
+                        {"friendId", (await context.Users.SingleAsync(f => f.PhoneNumber == userDetail.PhoneNumber)).Id}
                     });
             }
 
