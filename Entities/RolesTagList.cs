@@ -9,7 +9,11 @@ namespace TaskPlusPlus.API.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
+
+        [Required]
         public Guid RoleId { get; set; }
+
+        [Required]
         public Guid TagId { get; set; }
 
     }

@@ -9,9 +9,17 @@ namespace TaskPlusPlus.API.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
+
+        [Required]
         public Guid BoardId { get; set; }
+
+        [Required]
         public string Caption { get; set; }
+
+        [Required]
         public bool Removed { get; set; }
+
+        [Required]
         public DateTime CreationDate { get; set; }
     }
 }
