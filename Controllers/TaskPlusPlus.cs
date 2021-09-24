@@ -23,17 +23,17 @@ namespace TaskPlusPlus.API.Controllers
         }
 
         [HttpGet]
-        [Route("signin/{phoneNumber}")]
-        public async Task<IActionResult> SigninAsync(string phoneNumber)
+        [Route("signin/{phoneNumber}/{osVersion}/{deviceType}/{browerVersion}/{orientation}")]
+        public async Task<IActionResult> SigninAsync(string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation)
         {
-            var data = await _taskPlusPlusRepository.SigninAsync(phoneNumber);
+            var data = await _taskPlusPlusRepository.SigninAsync(phoneNumber, osVersion, deviceType, browerVersion, orientation);
             return Ok(data.ToString());
         }
         [HttpGet]
-        [Route("signup/{fName}/{lname}/{pNumber}")]
-        public async Task<IActionResult> SignUpAsync(string fName, string lName, string pNumber)
+        [Route("signup/{fName}/{lname}/{pNumber}/{osVersion}/{deviceType}/{browerVersion}/{orientation}")]
+        public async Task<IActionResult> SignUpAsync(string fName, string lName, string pNumber, string osVersion, string deviceType, string browerVersion, string orientation)
         {
-            var data = await _taskPlusPlusRepository.SignUpAsync(fName, lName, pNumber);
+            var data = await _taskPlusPlusRepository.SignUpAsync(fName, lName, pNumber, osVersion, deviceType, browerVersion, orientation);
             return Ok(data.ToString());
         }
 

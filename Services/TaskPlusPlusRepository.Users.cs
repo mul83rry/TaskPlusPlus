@@ -13,7 +13,7 @@ namespace TaskPlusPlus.API.Services
             : await context.Sessions.SingleAsync(s => s.AccessToken == accessToken);
 
 
-        public async Task<JObject> SigninAsync(string phoneNumber)
+        public async Task<JObject> SigninAsync(string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation)
         {
             if (!await context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
                 return JsonMap.FalseResultWithEmptyAccessToken;
@@ -28,6 +28,10 @@ namespace TaskPlusPlus.API.Services
                 IsValid = true,
                 UserId = user.Id,
                 CreationAt = DateTime.Now,
+                OsVersion = osVersion,
+                DeviceType = deviceType,
+                BrowerVersion = browerVersion,
+                Orientation = orientation,
                 LastFetchTime = DateTime.Now - TimeSpan.FromHours(1)
             };
 
@@ -36,7 +40,7 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.GetSuccesfullAccessToken(newSession.AccessToken);
         }
 
-        public async Task<JObject> SignUpAsync(string firstName, string lastName, string phoneNumber)
+        public async Task<JObject> SignUpAsync(string firstName, string lastName, string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation)
         {
             if (await context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
                 return JsonMap.FalseResultWithEmptyAccessToken;
@@ -58,6 +62,10 @@ namespace TaskPlusPlus.API.Services
                 Id = Guid.NewGuid(),
                 IsValid = true,
                 UserId = newUser.Id,
+                OsVersion = osVersion,
+                DeviceType = deviceType,
+                BrowerVersion = browerVersion,
+                Orientation = orientation,
                 CreationAt = DateTime.Now
             };
 

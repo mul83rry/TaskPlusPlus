@@ -7,8 +7,8 @@ namespace TaskPlusPlus.API.Services
     public interface ITaskPlusPlusRepository
     {
         #region Users
-        Task<JObject> SignUpAsync(string firstName, string lastName, string phoneNumber);
-        Task<JObject> SigninAsync(string phoneNumber);
+        Task<JObject> SignUpAsync(string firstName, string lastName, string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation);
+        Task<JObject> SigninAsync(string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation);
         #endregion
 
         #region Boards

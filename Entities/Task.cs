@@ -29,6 +29,9 @@ namespace TaskPlusPlus.API.Entities
         public DateTime CreationAt { get; set; }
 
         [Required]
+        public string Status { get; set; }
+
+        [Required]
         public bool Deleted { get; set; }
 
         [Required]

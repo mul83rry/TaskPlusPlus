@@ -24,6 +24,19 @@ namespace TaskPlusPlus.API.Entities
         public DateTime CreationAt { get; set; }
 
         [Required]
+        public string OsVersion { get; set; }
+
+        [Required]
+        public string DeviceType { get; set; }
+
+        [Required]
+        public string BrowerVersion { get; set; }
+
+        [Required]
+        public string Orientation { get; set; }
+
+        [Required]
         public DateTime LastFetchTime { get; set; }
     }
+
 }

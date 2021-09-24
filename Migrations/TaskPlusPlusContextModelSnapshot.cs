@@ -52,7 +52,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 9, 23, 19, 2, 50, 9, DateTimeKind.Local).AddTicks(9084));
+                        .HasDefaultValue(new DateTime(2021, 9, 24, 15, 6, 13, 280, DateTimeKind.Local).AddTicks(3470));
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uniqueidentifier");
@@ -250,16 +250,32 @@ namespace TaskPlusPlus.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("BrowerVersion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 9, 23, 19, 2, 50, 14, DateTimeKind.Local).AddTicks(2767));
+                        .HasDefaultValue(new DateTime(2021, 9, 24, 15, 6, 13, 285, DateTimeKind.Local).AddTicks(6819));
+
+                    b.Property<string>("DeviceType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsValid")
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("LastFetchTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Orientation")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OsVersion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -287,7 +303,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("GrantedAccessAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 9, 23, 19, 2, 50, 14, DateTimeKind.Local).AddTicks(451));
+                        .HasDefaultValue(new DateTime(2021, 9, 24, 15, 6, 13, 285, DateTimeKind.Local).AddTicks(4274));
 
                     b.Property<Guid>("ShareTo")
                         .HasColumnType("uniqueidentifier");
@@ -366,7 +382,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 9, 23, 19, 2, 50, 14, DateTimeKind.Local).AddTicks(5102));
+                        .HasDefaultValue(new DateTime(2021, 9, 24, 15, 6, 13, 285, DateTimeKind.Local).AddTicks(9357));
 
                     b.Property<Guid>("Creator")
                         .HasColumnType("uniqueidentifier");
@@ -386,6 +402,10 @@ namespace TaskPlusPlus.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -418,7 +438,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("SignupDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 9, 23, 19, 2, 50, 14, DateTimeKind.Local).AddTicks(1658));
+                        .HasDefaultValue(new DateTime(2021, 9, 24, 15, 6, 13, 285, DateTimeKind.Local).AddTicks(5838));
 
                     b.HasKey("Id");
 
