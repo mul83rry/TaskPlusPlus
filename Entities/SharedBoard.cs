@@ -18,5 +18,8 @@ namespace TaskPlusPlus.API.Entities
 
         [Required]
         public DateTime GrantedAccessAt { get; set; }
+
+        /*[Required] todo
+        public bool Deleted { get; set; }*/
     }
 }

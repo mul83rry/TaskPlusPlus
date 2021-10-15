@@ -17,7 +17,7 @@ namespace TaskPlusPlus.API.Entities
         public Guid TaskId { get; set; }
         
         [Required]
-        public bool Removed { get; set; }
+        public bool Removed { get; set; } // todo: rename to 'Deleted'
 
         [Required]
         public DateTime AsignDate { get; set; }

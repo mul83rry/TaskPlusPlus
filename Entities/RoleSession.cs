@@ -15,7 +15,7 @@ namespace TaskPlusPlus.API.Entities
 
         [Required]
         public Guid BoardId { get; set; }
-        
+
         [Required]
         public Guid UserId { get; set; }
 
@@ -24,5 +24,8 @@ namespace TaskPlusPlus.API.Entities
 
         [Required]
         public DateTime AsignDate { get; set; }
+
+        /*[Required] todo
+        public DateTime DemotedDate { get; set; }*/
     }
 }

@@ -17,19 +17,19 @@ namespace TaskPlusPlus.API.Entities
         [Required]
         public Guid Sender { get; set; }
 
-
         [Required]
         public Guid ReplyTo { get; set; }
 
         [Required]
         public Guid LastModifiedBy { get; set; }
+        // todo: admin = if admin edit user comment type sonsored by
 
         [Required]
         public DateTime CreationDate { get; set; }
 
         [Required]
         public string EditId { get; set; }
-
+        // todo: check for default guid
 
         [Required]
         public bool Deleted { get; set; }

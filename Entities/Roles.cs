@@ -21,6 +21,9 @@ namespace TaskPlusPlus.API.Entities
 
         [Required]
         public bool TaskWrite { get; set; }
+        
+        /*[Required] todo: check
+        public bool TaskCompelete { get; set; }*/
 
         [Required]
         public bool CommentRead { get; set; }
@@ -29,7 +32,7 @@ namespace TaskPlusPlus.API.Entities
         public bool CommentWrite { get; set; }
 
         [Required]
-        public bool Removed { get; set; }
+        public bool Removed { get; set; } // todo: Rename to 'Delete'
 
         [Required]
         public DateTime CreatedAt { get; set; }

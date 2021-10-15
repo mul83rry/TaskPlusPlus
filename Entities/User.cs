@@ -12,16 +12,16 @@ namespace TaskPlusPlus.API.Entities
 
         [Required]
         [MaxLength(50)]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } // todo: move to profile table
 
         [MaxLength(50)]
-        public string LastName { get; set; }
+        public string LastName { get; set; } // todo: move to profile table
 
         [Required]
         public DateTime SignupDate { get; set; }          
 
         [Required]
         [MaxLength(20)]
-        public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } // todo: move to login table
     }
 }

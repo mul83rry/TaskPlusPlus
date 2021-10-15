@@ -27,5 +27,8 @@ namespace TaskPlusPlus.API.Entities
 
         [Required]
         public DateTime RequestDate { get; set; }
+        
+        [Required]
+        public DateTime ApplyDate { get; set; }
     }
 }
