@@ -12,7 +12,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> AddFriendAsync(string accessToken, string phoneNumber)
         {
             var user = await GetUserSessionAsync(accessToken);
-            var friendUser = await context.Users.SingleOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+            var friendUser = await context.Login.SingleOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
             if (friendUser == null) return JsonMap.FalseResult;
             if (friendUser.Id == user.UserId) return JsonMap.FalseResult;
 
@@ -55,7 +55,7 @@ namespace TaskPlusPlus.API.Services
 
             foreach (var item in res)
             {
-                User userDetail = null;
+                Profile userDetail = null;
 
                 if (item.From == user.UserId) userDetail = await GetUser(item.To);
                 else if (item.To == user.UserId) userDetail = await GetUser(item.From);
@@ -66,7 +66,7 @@ namespace TaskPlusPlus.API.Services
                         {"firstName", userDetail.FirstName },
                         {"lastName", userDetail.LastName},
                         {"phoneNumber", userDetail.PhoneNumber},
-                        {"friendId", (await context.Users.SingleAsync(f => f.PhoneNumber == userDetail.PhoneNumber)).Id}
+                        {"friendId", (await context.Login.SingleAsync(f => f.PhoneNumber == userDetail.PhoneNumber)).Id}
                     });
             }
 

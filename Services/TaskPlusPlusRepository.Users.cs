@@ -15,10 +15,10 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> SigninAsync(string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation)
         {
-            if (!await context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
+            if (!await context.Login.AnyAsync(u => u.PhoneNumber == phoneNumber))
                 return JsonMap.FalseResultWithEmptyAccessToken;
 
-            var user = await context.Users.SingleAsync(u => u.PhoneNumber == phoneNumber);
+            var user = await context.Login.SingleAsync(u => u.PhoneNumber == phoneNumber);
 
             // Add new session
             var newSession = new Session()
@@ -42,18 +42,16 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> SignUpAsync(string firstName, string lastName, string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation)
         {
-            if (await context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber))
+            if (await context.Login.AnyAsync(u => u.PhoneNumber == phoneNumber))
                 return JsonMap.FalseResultWithEmptyAccessToken;
 
-            var newUser = new User()
+            var newUser = new Login()
             {
                 Id = Guid.NewGuid(),
-                FirstName = firstName,
-                LastName = lastName,
                 PhoneNumber = phoneNumber,
-                SignupDate = DateTime.Now
+                Email = string.Empty
             };
-            await context.Users.AddAsync(newUser);
+            await context.Login.AddAsync(newUser);
 
             // Add new session
             var newSession = new Session()
@@ -70,11 +68,27 @@ namespace TaskPlusPlus.API.Services
             };
 
             await context.Sessions.AddAsync(newSession);
+
+            // add new profile row
+
+            var newProfile = new Profile()
+            {
+                Id = Guid.NewGuid(),
+                UserId = newUser.Id,
+                Bio = string.Empty,
+                Image = string.Empty,
+                PhoneNumber = newUser.PhoneNumber,
+                SignupDate = DateTime.Now,
+                FirstName = "User",
+                LastName = string.Empty
+            };
+
+            await context.Profiles.AddAsync(newProfile);
             await context.SaveChangesAsync();
             return JsonMap.GetSuccesfullAccessToken(newSession.AccessToken);
         }
 
 
-        private async Task<User> GetUser(Guid userId) => await context.Users.SingleOrDefaultAsync(u => u.Id == userId);
+        private async Task<Profile> GetUser(Guid userId) => await context.Profiles.SingleOrDefaultAsync(u => u.UserId == userId);
     }
 }

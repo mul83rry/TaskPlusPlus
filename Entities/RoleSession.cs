@@ -25,7 +25,7 @@ namespace TaskPlusPlus.API.Entities
         [Required]
         public DateTime AsignDate { get; set; }
 
-        /*[Required] todo
-        public DateTime DemotedDate { get; set; }*/
+        [Required]
+        public DateTime DemotedDate { get; set; }
     }
 }

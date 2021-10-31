@@ -22,7 +22,7 @@ namespace TaskPlusPlus.API.Services
                 Id = Guid.NewGuid(),
                 BoardId = boardId,
                 Caption = caption,
-                Removed = false,
+                Deleted = false,
                 CreationDate = DateTime.Now
             };
 
@@ -45,13 +45,13 @@ namespace TaskPlusPlus.API.Services
                       {
                           tag.Id,
                           tag.Caption,
-                          tag.Removed,
+                          tag.Deleted,
                       };
 
             var jsonData = new JArray();
             foreach (var item in res)
             {
-                if (item.Removed == false)
+                if (item.Deleted == false)
                 {
                     jsonData.Add(new JObject
                     {
@@ -68,15 +68,15 @@ namespace TaskPlusPlus.API.Services
         {
             var user = await GetUserSessionAsync(acessToken);
             if (!await IsOwnerOfBoard(user.UserId, taskId)) return JsonMap.FalseResult;
-            if (!await context.Tags.AnyAsync(t => t.Id == tagId && !t.Removed)) return JsonMap.FalseResult;
-            if (await context.TagsList.AnyAsync(t => !t.Removed && t.TagId == tagId && t.TaskId == taskId)) return JsonMap.FalseResult;
+            if (!await context.Tags.AnyAsync(t => t.Id == tagId && !t.Deleted)) return JsonMap.FalseResult;
+            if (await context.TagsList.AnyAsync(t => !t.Deleted && t.TagId == tagId && t.TaskId == taskId)) return JsonMap.FalseResult;
 
             var taskTag = new TagsList()
             {
                 Id = Guid.NewGuid(),
                 TagId = tagId,
                 TaskId = taskId,
-                Removed = false,
+                Deleted = false,
                 AsignDate = DateTime.Now
             };
 
@@ -93,13 +93,13 @@ namespace TaskPlusPlus.API.Services
                       {
                           tagList.Id,
                           tagList.TagId,
-                          tagList.Removed
+                          tagList.Deleted
                       };
 
             var jsonData = new JArray();
             foreach (var item in res)
             {
-                if (item.Removed == false)
+                if (item.Deleted == false)
                 {
                     jsonData.Add(new JObject
                     {
@@ -122,7 +122,7 @@ namespace TaskPlusPlus.API.Services
             if (!isOwner || isUsing) return JsonMap.FalseResult;
 
             var tag = await context.Tags.SingleOrDefaultAsync(t => t.Id == tagId);
-            tag.Removed = true;
+            tag.Deleted = true;
             await context.SaveChangesAsync();
 
             return JsonMap.TrueResult;
@@ -133,10 +133,10 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken);
             if (!(await IsOwnerOfBoard(user.UserId, taskId))) return JsonMap.FalseResult;
 
-            var taskTag = await context.TagsList.SingleOrDefaultAsync(t => t.Id == taskTagId && !t.Removed);
+            var taskTag = await context.TagsList.SingleOrDefaultAsync(t => t.Id == taskTagId && !t.Deleted);
             if (taskTag == null) return JsonMap.FalseResult;
 
-            taskTag.Removed = true;
+            taskTag.Deleted = true;
             await context.SaveChangesAsync();
 
             return JsonMap.TrueResult;
@@ -156,7 +156,7 @@ namespace TaskPlusPlus.API.Services
                               };
 
             var tagsInRoles = from rolesTag in context.RolesTagList.Where(r => r.TagId == tagId)
-                              join role in context.Roles.Where(r => !r.Removed) on rolesTag.RoleId equals role.Id
+                              join role in context.Roles.Where(r => !r.Deleted) on rolesTag.RoleId equals role.Id
                               select new
                               {
                                   rolesTag.RoleId,
@@ -183,7 +183,7 @@ namespace TaskPlusPlus.API.Services
                                 roleTags.RoleId
                             };
 
-            var taskTags = from tasktag in context.TagsList.Where(t => !t.Removed && t.TaskId == parentId)
+            var taskTags = from tasktag in context.TagsList.Where(t => !t.Deleted && t.TaskId == parentId)
                            select new
                            {
                                tasktag.Id,

@@ -11,7 +11,6 @@ namespace TaskPlusPlus.API.DbContexts
         {
         }
 
-        public DbSet<User> Users { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<File> Files { get; set; }
         public DbSet<Task> Tasks { get; set; }
@@ -30,6 +29,10 @@ namespace TaskPlusPlus.API.DbContexts
 
         public DbSet<RoleSession> RoleSessions { get; set; }
 
+        public DbSet<Login> Login { get; set; }
+
+        public DbSet<Profile> Profiles { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Board>().HasIndex(u => u.Id).IsUnique();
@@ -43,12 +46,13 @@ namespace TaskPlusPlus.API.DbContexts
             modelBuilder.Entity<AssignTo>().HasIndex(u => u.Id).IsUnique();
             modelBuilder.Entity<Tag>().HasIndex(u => u.Id).IsUnique();
             modelBuilder.Entity<FriendList>().HasIndex(u => u.Id).IsUnique();
+            modelBuilder.Entity<Login>().HasIndex(u => u.Id).IsUnique();
+            modelBuilder.Entity<Profile>().HasIndex(u => u.Id).IsUnique();
             //modelBuilder.Entity<User>().HasIndex(u => u.PhoneNumber).IsUnique();
 
             modelBuilder.Entity<Board>().Property(p => p.Deleted).HasDefaultValue(false);
             modelBuilder.Entity<Board>().Property(p => p.CreationAt).HasDefaultValue(DateTime.Now);
             modelBuilder.Entity<SharedBoard>().Property(p => p.GrantedAccessAt).HasDefaultValue(DateTime.Now);
-            modelBuilder.Entity<User>().Property(p => p.SignupDate).HasDefaultValue(DateTime.Now);
             modelBuilder.Entity<Session>().Property(p => p.CreationAt).HasDefaultValue(DateTime.Now);
             modelBuilder.Entity<Task>().Property(p => p.Deleted).HasDefaultValue(false);
             modelBuilder.Entity<Task>().Property(p => p.Star).HasDefaultValue(false);

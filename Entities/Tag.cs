@@ -17,7 +17,7 @@ namespace TaskPlusPlus.API.Entities
         public string Caption { get; set; }
 
         [Required]
-        public bool Removed { get; set; } // todo: rename to 'Deleted'
+        public bool Deleted { get; set; } 
 
         [Required]
         public DateTime CreationDate { get; set; }

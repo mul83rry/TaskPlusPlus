@@ -25,9 +25,11 @@ namespace TaskPlusPlus.API.Services
                 ReplyTo = parentId,
                 CreationDate = DateTime.Now,
                 Deleted = false,
-                EditId = "0",
+                EditId = Guid.NewGuid(),
                 LastModifiedBy = user.UserId
             };
+
+            comment.EditId = comment.Id;
 
             await context.Comments.AddAsync(comment);
             await context.SaveChangesAsync();
@@ -43,7 +45,7 @@ namespace TaskPlusPlus.API.Services
             if (!isOwner && !await HasPermissions(user.UserId, parentId, Permissions.ReadComment)) return JsonMap.FalseResult.ToString();
 
             var res = from comment in context.Comments
-                      .Where(c => c.ReplyTo == parentId && c.Deleted == false && c.EditId == "0").OrderBy(c => c.CreationDate)
+                      .Where(c => c.ReplyTo == parentId && c.Deleted == false && c.EditId == c.Id).OrderBy(c => c.CreationDate)
                       select new
                       {
                           comment.Id,
@@ -87,11 +89,11 @@ namespace TaskPlusPlus.API.Services
                 ReplyTo = parentId,
                 CreationDate = oldComment.CreationDate,
                 Deleted = false,
-                EditId = "0",
+                EditId = Guid.NewGuid(),
                 LastModifiedBy = user.UserId,
             };
 
-            oldComment.EditId = comment.Id.ToString();
+            oldComment.EditId = comment.Id;
 
             await context.Comments.AddAsync(comment);
             await context.SaveChangesAsync();

@@ -24,7 +24,7 @@ namespace TaskPlusPlus.API.Services
                 TaskWrite = writeTask,
                 CommentRead = readComment,
                 CommentWrite = writeComment,
-                Removed = false,
+                Deleted = false,
                 CreatedAt = DateTime.Now
             };
 
@@ -38,7 +38,7 @@ namespace TaskPlusPlus.API.Services
             foreach (var item in tagListArray)
             {
                 if (string.IsNullOrEmpty(item)) continue;
-                if (!await context.Tags.AnyAsync(t => !t.Removed && t.Id == Guid.Parse(item) && t.BoardId == boardId)) continue;
+                if (!await context.Tags.AnyAsync(t => !t.Deleted && t.Id == Guid.Parse(item) && t.BoardId == boardId)) continue;
 
                 var roleTag = new RolesTagList()
                 {
@@ -62,7 +62,7 @@ namespace TaskPlusPlus.API.Services
             var jsonData = new JArray();
             if (!(await context.SharedBoards.AnyAsync(s => s.ShareTo == user.UserId && s.BoardId == boardId))) return jsonData.ToString();
 
-            var res = from roles in context.Roles.Where(r => r.BoardId == boardId && !r.Removed).OrderBy(s => s.CreatedAt)
+            var res = from roles in context.Roles.Where(r => r.BoardId == boardId && !r.Deleted).OrderBy(s => s.CreatedAt)
                       select new
                       {
                           roles.Id,
@@ -95,7 +95,7 @@ namespace TaskPlusPlus.API.Services
             var isOwner = await IsOwnerOfBoard(user.UserId, boardId);
             var selfPromote = await IsOwnerOfBoard(employeesId, boardId);
             var isShared = await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == employeesId);
-            var roleExist = await context.Roles.AnyAsync(r => r.Id == roleId && !r.Removed);
+            var roleExist = await context.Roles.AnyAsync(r => r.Id == roleId && !r.Deleted);
 
             if (!isOwner || !isShared || !roleExist || selfPromote) return JsonMap.FalseResult;
 
@@ -124,7 +124,7 @@ namespace TaskPlusPlus.API.Services
             if (await context.RoleSessions.AnyAsync(r => r.RoleId == roleId && !r.Demoted)) return JsonMap.FalseResult;
 
             var role = await context.Roles.SingleOrDefaultAsync(r => r.Id == roleId);
-            role.Removed = true;
+            role.Deleted = true;
             await context.SaveChangesAsync();
 
             return JsonMap.TrueResult;

@@ -102,7 +102,7 @@ namespace TaskPlusPlus.API.Services
             var usersIdToShare = shareToList.Split(',');
             foreach (var item in usersIdToShare.Where(i => !string.IsNullOrEmpty(i)))
             {
-                var friend = await context.Users.SingleAsync(u => u.Id == Guid.Parse(item));
+                var friend = await context.Profiles.SingleAsync(u => u.UserId == Guid.Parse(item));
 
                 if (await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == friend.Id)) continue;
 

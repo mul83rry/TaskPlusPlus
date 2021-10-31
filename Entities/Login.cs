@@ -2,24 +2,21 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
+
 namespace TaskPlusPlus.API.Entities
 {
-    public class SharedBoard
+    public class Login
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
 
         [Required]
-        public Guid BoardId { get; set; }
+        [MaxLength(20)]
+        public string PhoneNumber { get; set; }
+
 
         [Required]
-        public Guid ShareTo { get; set; }
-
-        [Required]
-        public DateTime GrantedAccessAt { get; set; }
-
-        [Required]
-        public bool Deleted { get; set; }
+        public string Email { get; set; }
     }
 }

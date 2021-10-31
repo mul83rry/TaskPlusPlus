@@ -5,6 +5,7 @@
         ReadTask,
         WriteTask,
         ReadComment,
-        WriteComment
+        WriteComment,
+        CompeleteTask
     }
 }
