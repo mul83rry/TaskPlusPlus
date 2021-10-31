@@ -112,6 +112,22 @@ namespace TaskPlusPlus.API.Services
             return jsonData;
         }
 
+
+        public async Task<JObject> RemoveTagAsync(string accessToken, Guid boardId, Guid tagId)
+        {
+            var user = await GetUserSessionAsync(accessToken);
+            var isOwner = await IsOwnerOfBoard(user.UserId, boardId);
+            var isUsing = await TagIsUsing(tagId);
+
+            if (!isOwner || isUsing) return JsonMap.FalseResult;
+
+            var tag = await context.Tags.SingleOrDefaultAsync(t => t.Id == tagId);
+            tag.Removed = true;
+            await context.SaveChangesAsync();
+
+            return JsonMap.TrueResult;
+        }
+
         public async Task<JObject> RemoveTagFromTaskAsync(string accessToken, Guid taskId, Guid taskTagId)
         {
             var user = await GetUserSessionAsync(accessToken);
