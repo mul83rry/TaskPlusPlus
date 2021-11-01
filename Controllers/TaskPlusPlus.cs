@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using TaskPlusPlus.API.Model;
 using TaskPlusPlus.API.Services;
 
 namespace TaskPlusPlus.API.Controllers
@@ -22,20 +23,14 @@ namespace TaskPlusPlus.API.Controllers
             return Ok("welcome to task++");
         }
 
-        [HttpGet]
-        [Route("signin/{phoneNumber}/{osVersion}/{deviceType}/{browerVersion}/{orientation}")]
-        public async Task<IActionResult> SigninAsync(string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation)
+        [HttpPost]
+        [Route("signin")]
+        public IActionResult SigninAsync([FromBody] SignIn signIn)
         {
-            var data = await _taskPlusPlusRepository.SigninAsync(phoneNumber, osVersion, deviceType, browerVersion, orientation);
-            return Ok(data.ToString());
+            //var data = await _taskPlusPlusRepository.SigninAsync(signIn.phoneNumber, signIn.osVersion, signIn.deviceType, signIn.browerVersion, signIn.orientation);
+            return Ok(signIn.ToString());
         }
-        [HttpGet]
-        [Route("signup/{fName}/{lname}/{pNumber}/{osVersion}/{deviceType}/{browerVersion}/{orientation}")]
-        public async Task<IActionResult> SignUpAsync(string fName, string lName, string pNumber, string osVersion, string deviceType, string browerVersion, string orientation)
-        {
-            var data = await _taskPlusPlusRepository.SignUpAsync(fName, lName, pNumber, osVersion, deviceType, browerVersion, orientation);
-            return Ok(data.ToString());
-        }
+        
 
         [HttpGet]
         [Route("board/add/{accessToken}/{caption}")]

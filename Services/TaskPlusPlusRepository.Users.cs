@@ -15,42 +15,40 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> SigninAsync(string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation)
         {
-            if (!await context.Login.AnyAsync(u => u.PhoneNumber == phoneNumber))
-                return JsonMap.FalseResultWithEmptyAccessToken;
+            var userExist = await context.Login.AnyAsync(u => u.PhoneNumber == phoneNumber);
 
-            var user = await context.Login.SingleAsync(u => u.PhoneNumber == phoneNumber);
-
-            // Add new session
-            var newSession = new Session()
+            if (userExist)
             {
-                AccessToken = Guid.NewGuid().ToString(),
-                Id = Guid.NewGuid(),
-                IsValid = true,
-                UserId = user.Id,
-                CreationAt = DateTime.Now,
-                OsVersion = osVersion,
-                DeviceType = deviceType,
-                BrowerVersion = browerVersion,
-                Orientation = orientation,
-                LastFetchTime = DateTime.Now - TimeSpan.FromHours(1)
-            };
+                var user = await context.Login.SingleAsync(u => u.PhoneNumber == phoneNumber);
+                // Add new session
+                var session = new Session()
+                {
+                    AccessToken = Guid.NewGuid().ToString(),
+                    Id = Guid.NewGuid(),
+                    IsValid = true,
+                    UserId = user.Id,
+                    CreationAt = DateTime.Now,
+                    OsVersion = osVersion,
+                    DeviceType = deviceType,
+                    BrowerVersion = browerVersion,
+                    Orientation = orientation,
+                    LastFetchTime = DateTime.Now - TimeSpan.FromHours(1)
+                };
 
-            await context.Sessions.AddAsync(newSession);
-            await context.SaveChangesAsync();
-            return JsonMap.GetSuccesfullAccessToken(newSession.AccessToken);
-        }
+                await context.Sessions.AddAsync(session);
+                await context.SaveChangesAsync();
 
-        public async Task<JObject> SignUpAsync(string firstName, string lastName, string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation)
-        {
-            if (await context.Login.AnyAsync(u => u.PhoneNumber == phoneNumber))
-                return JsonMap.FalseResultWithEmptyAccessToken;
+                return JsonMap.GetSuccesfullAccessToken(session.AccessToken);
+            }
 
+            // add new user
             var newUser = new Login()
             {
                 Id = Guid.NewGuid(),
                 PhoneNumber = phoneNumber,
                 Email = string.Empty
             };
+
             await context.Login.AddAsync(newUser);
 
             // Add new session
@@ -70,7 +68,6 @@ namespace TaskPlusPlus.API.Services
             await context.Sessions.AddAsync(newSession);
 
             // add new profile row
-
             var newProfile = new Profile()
             {
                 Id = Guid.NewGuid(),
@@ -85,6 +82,7 @@ namespace TaskPlusPlus.API.Services
 
             await context.Profiles.AddAsync(newProfile);
             await context.SaveChangesAsync();
+
             return JsonMap.GetSuccesfullAccessToken(newSession.AccessToken);
         }
 
