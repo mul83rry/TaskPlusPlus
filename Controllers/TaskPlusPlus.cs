@@ -33,7 +33,7 @@ namespace TaskPlusPlus.API.Controllers
         
         [HttpPost]
         [Route("addboard")]
-        public async Task<IActionResult> AddBoardAsync([FromBody] Board board)
+        public async Task<IActionResult> AddBoardAsync([FromBody] BoardModel board)
         {
             var data = await _taskPlusPlusRepository.AddBoardAsync(board.AccessToken, board.Caption);
             return Ok(data.ToString());
@@ -41,7 +41,7 @@ namespace TaskPlusPlus.API.Controllers
 
         [HttpPost]
         [Route("editboard")]
-        public async Task<IActionResult> UpdateBoardAsync(EditBoard newBoard)
+        public async Task<IActionResult> UpdateBoardAsync([FromBody] EditBoard newBoard)
         {
             var data = await _taskPlusPlusRepository.UpdateBoardAsync(newBoard.AccessToken, newBoard.Id, newBoard.Caption);
             return Ok(data.ToString());
@@ -49,7 +49,7 @@ namespace TaskPlusPlus.API.Controllers
 
         [HttpPost]
         [Route("deleteboard")]
-        public async Task<IActionResult> DeleteBoardAsync(DeleteBoard board)
+        public async Task<IActionResult> DeleteBoardAsync([FromBody] DeleteBoard board)
         {
             var data = await _taskPlusPlusRepository.DeleteBoardAsync(board.AccessToken, board.Id);
             return Ok(data.ToString());
@@ -62,27 +62,30 @@ namespace TaskPlusPlus.API.Controllers
             return Ok(data);
         }
 
-        [HttpGet]
-        [Route("task/list/{accessToken}/{parentId:guid}")]
-        public async Task<IActionResult> GetTaskAsync(string accessToken, Guid parentId)
+        [HttpPost]
+        [Route("gettasks")]
+        public async Task<IActionResult> GetTaskAsync([FromBody] TaskModel task)
         {
-            var data = await _taskPlusPlusRepository.GetTasksAsync(accessToken, parentId);
+            var data = await _taskPlusPlusRepository.GetTasksAsync(task.AccessToken, task.ParentId);
             return Ok(data);
         }
-        [HttpGet]
-        [Route("task/add/{accessToken}/{parentId}/{caption}")]
-        public async Task<IActionResult> AddTaskAsync(string accessToken, Guid parentId, string caption)
+
+        [HttpPost]
+        [Route("addtask")]
+        public async Task<IActionResult> AddTaskAsync([FromBody] AddTask task)
         {
-            var data = await _taskPlusPlusRepository.AddTaskAsync(accessToken, parentId, caption);
+            var data = await _taskPlusPlusRepository.AddTaskAsync(task.AccessToken, task.ParentId, task.Caption);
             return Ok(data.ToString());
         }
-        [HttpGet]
-        [Route("task/edit/{accessToken}/{parentId:guid}/{caption}/{star:bool}")]
-        public async Task<IActionResult> EditTaskAsync(string accessToken, Guid parentId, string caption, bool star)
+
+        [HttpPost]
+        [Route("edittask")]
+        public async Task<IActionResult> EditTaskAsync([FromBody] EditTask task)
         {
-            var data = await _taskPlusPlusRepository.EditTaskAsync(accessToken, parentId, caption, star);
+            var data = await _taskPlusPlusRepository.EditTaskAsync(task.AccessToken, task.Id, task.Caption, task.Star);
             return Ok(data.ToString());
         }
+
         [HttpGet]
         [Route("subtask/add/{accessToken}/{parentId:guid}/{caption}")]
         public async Task<IActionResult> AddSubTaskAsync(string accessToken, Guid parentId, string caption)
@@ -106,12 +109,12 @@ namespace TaskPlusPlus.API.Controllers
             return Ok(data.ToString());
         }
 
-        [HttpGet]
-        [Route("task/delete/{accessToken}/{parentId:guid}")]
+        [HttpPost]
+        [Route("deletetask")]
 
-        public async Task<IActionResult> DeleteTaskAsync(string accessToken, Guid parentId)
+        public async Task<IActionResult> DeleteTaskAsync([FromBody] DeleteTask task)
         {
-            var data = await _taskPlusPlusRepository.DeleteTaskAsync(accessToken, parentId);
+            var data = await _taskPlusPlusRepository.DeleteTaskAsync(task.AccessToken, task.Id );
             return Ok(data.ToString());
         }
 

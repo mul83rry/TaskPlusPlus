@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace TaskPlusPlus.API.Model
 {
-    public class Board
+    public class TaskModel
     {
         public string AccessToken { get; set; }
-        public string Caption { get; set; }
+        public Guid ParentId { get; set; }
     }
 }

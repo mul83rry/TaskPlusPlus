@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace TaskPlusPlus.API.Services
 {
@@ -40,14 +41,15 @@ namespace TaskPlusPlus.API.Services
 
                 jsonData.Add(new JObject
                     {
-                        {"id", item.Id },
-                        {"caption",  item.Caption },
-                        {"star",  item.Star },
-                        {"creationAt",  item.CreationAt },
-                        {"haveChild", (await HaveChild(item.Id))["result"] },
-                        {"lastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName.ToString()},
-                        {"tags", (await GetTaskTagListAsync(item.Id))},
-                        {"compeleted" , item.Compeleted}
+                        {"Id", item.Id },
+                        {"Caption",  item.Caption },
+                        {"Star",  item.Star },
+                        {"CreationAt",  item.CreationAt },
+                        {"LastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName.ToString()},
+                        {"Tags", (await GetTaskTagListAsync(item.Id))},
+                        {"Compeleted" , item.Compeleted},
+                        {"SubTasksCount" , GetChildsCount(item.Id)},
+                        {"SubCommentsCount" , GetCommentsCount(item.Id)},
                     });
             }
             return jsonData.ToString();
@@ -75,7 +77,9 @@ namespace TaskPlusPlus.API.Services
                 Deleted = false,
                 Creator = user.UserId,
                 LastModifiedBy = user.UserId,
-                Compeleted = false
+                Compeleted = false,
+                Status = "ToDo",
+
             };
 
             await context.Tasks.AddAsync(task);
@@ -203,6 +207,33 @@ namespace TaskPlusPlus.API.Services
 
             return JsonMap.TrueResult;
         }
-        private async Task<JObject> HaveChild(Guid taskId) => new JObject { { "result", await context.Tasks.AnyAsync(t => t.ParentId == taskId && t.Deleted == false) } };
+        //private async Task<JObject> HaveChild(Guid taskId) => new JObject { { "result", await context.Tasks.AnyAsync(t => t.ParentId == taskId && t.Deleted == false) } };
+
+        private int GetChildsCount(Guid parentId)
+        {
+            var tasks = from task in context.Tasks.Where(t => t.ParentId == parentId && !t.Deleted)
+                        select new
+                        {
+                            task.Id
+                        };
+
+
+
+            return tasks.Count();
+        }
+
+
+        private int GetCommentsCount(Guid parentId)
+        {
+            var comments = from comment in context.Comments.Where(c => c.ParentId == parentId && c.Id == c.EditId && !c.Deleted)
+                           select new
+                           {
+                               comment.Id
+                           };
+
+
+
+            return comments.Count();
+        }
     }
 }
