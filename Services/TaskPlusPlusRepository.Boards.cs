@@ -29,12 +29,16 @@ namespace TaskPlusPlus.API.Services
             var jsonData = new JArray();
             foreach (var item in res)
             {
+                var childs = GetBoardsAllChilds(item.Id);
                 jsonData.Add(new JObject
                 {
-                    {"id", item.Id },
-                    {"CreatorId",  item.CreatorId },
-                    {"caption",  item.Caption },
-                    {"creationAt",  item.CreationAt }
+                    {"Id", item.Id },
+                    {"Creator",  (await GetUser(item.CreatorId)).FirstName },
+                    {"Caption",  item.Caption },
+                    {"CreationAt",  item.CreationAt },
+                    {"ChildsCount", childs.Count },
+                    {"CommentsCount", GetBoardsCommentsCount(childs)},
+                    {"EmployeesCount", GetEmployeesCount(item.Id) }
                 });
             }
             return jsonData.ToString();
@@ -160,5 +164,69 @@ namespace TaskPlusPlus.API.Services
             return boardId;
         }
 
+
+
+        private List<Guid> GetBoardsAllChilds(Guid boardId)
+        {
+            var tasksList = new List<Guid>();
+
+            var tasks = from task in context.Tasks.Where(t => t.ParentId == boardId)
+                        select new
+                        {
+                            task.Id
+                        };
+
+            
+
+            foreach(var item in tasks)
+            {
+                tasksList.Add(item.Id);
+            }
+
+            foreach(var item in tasksList)
+            {
+                var subTasks = from subTask in context.Tasks.Where(t => t.ParentId == item)
+                             select new
+                             {
+                                 subTask.Id
+                             };
+
+                subTasks.ForEachAsync(data => tasksList.Add(data.Id));
+            }
+
+
+            return tasksList;
+        }
+
+
+        private int GetBoardsCommentsCount(List<Guid> childs)
+        {
+            var commentsList = new List<Guid>();
+            foreach(var item in childs)
+            {
+                var comments = from comment in context.Comments.Where(c => c.ParentId == item && c.Id == c.EditId)
+                               select new
+                               {
+                                   comment.Id
+                               };
+
+                comments.ForEachAsync(data => commentsList.Add(data.Id));
+            }
+
+
+            return commentsList.Count;
+        }
+
+
+        private int GetEmployeesCount(Guid boardId)
+        {
+            var shares = from shareBoard in context.SharedBoards.Where(s => !s.Deleted && s.BoardId == boardId)
+                         select new
+                         {
+                             shareBoard.Id
+                         };
+
+            return shares.Count();
+        }
     }
 }

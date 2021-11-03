@@ -25,39 +25,40 @@ namespace TaskPlusPlus.API.Controllers
 
         [HttpPost]
         [Route("signin")]
-        public IActionResult SigninAsync([FromBody] SignIn signIn)
+        public async Task<IActionResult> SigninAsync([FromBody] SignIn signIn)
         {
-            //var data = await _taskPlusPlusRepository.SigninAsync(signIn.phoneNumber, signIn.osVersion, signIn.deviceType, signIn.browerVersion, signIn.orientation);
-            return Ok(signIn.ToString());
+            var data = await _taskPlusPlusRepository.SigninAsync(signIn.PhoneNumber, signIn.OsVersion, signIn.DeviceType, signIn.BrowerVersion, signIn.Orientation);
+            return Ok(data.ToString());
         }
         
+        [HttpPost]
+        [Route("addboard")]
+        public async Task<IActionResult> AddBoardAsync([FromBody] Board board)
+        {
+            var data = await _taskPlusPlusRepository.AddBoardAsync(board.AccessToken, board.Caption);
+            return Ok(data.ToString());
+        }
 
-        [HttpGet]
-        [Route("board/add/{accessToken}/{caption}")]
-        public async Task<IActionResult> AddBoardAsync(string accessToken, string caption)
+        [HttpPost]
+        [Route("editboard")]
+        public async Task<IActionResult> UpdateBoardAsync(EditBoard newBoard)
         {
-            var data = await _taskPlusPlusRepository.AddBoardAsync(accessToken, caption);
+            var data = await _taskPlusPlusRepository.UpdateBoardAsync(newBoard.AccessToken, newBoard.Id, newBoard.Caption);
             return Ok(data.ToString());
         }
-        [HttpGet]
-        [Route("board/update/{accessToken}/{boardId:guid}/{caption}")]
-        public async Task<IActionResult> UpdateBoardAsync(string accessToken, Guid boardId, string caption)
+
+        [HttpPost]
+        [Route("deleteboard")]
+        public async Task<IActionResult> DeleteBoardAsync(DeleteBoard board)
         {
-            var data = await _taskPlusPlusRepository.UpdateBoardAsync(accessToken, boardId, caption);
+            var data = await _taskPlusPlusRepository.DeleteBoardAsync(board.AccessToken, board.Id);
             return Ok(data.ToString());
         }
-        [HttpGet]
-        [Route("board/delete/{accessToken}/{boardId}")]
-        public async Task<IActionResult> DeleteBoardAsync(string accessToken, Guid boardId)
+        [HttpPost]
+        [Route("getboards")]
+        public async Task<IActionResult> GetBoardsListAsync([FromBody] AccessCode accessToken)
         {
-            var data = await _taskPlusPlusRepository.DeleteBoardAsync(accessToken, boardId);
-            return Ok(data.ToString());
-        }
-        [HttpGet]
-        [Route("board/list/{accessToken}")]
-        public async Task<IActionResult> GetBoardsListAsync(string accessToken)
-        {
-            var data = await _taskPlusPlusRepository.GetBoardsAsync(accessToken);
+            var data = await _taskPlusPlusRepository.GetBoardsAsync(accessToken.AccessToken);
             return Ok(data);
         }
 

@@ -10,7 +10,7 @@ using TaskPlusPlus.API.DbContexts;
 namespace TaskPlusPlus.API.Migrations
 {
     [DbContext(typeof(TaskPlusPlusContext))]
-    [Migration("20210924113613_InitialCreate")]
+    [Migration("20211102074824_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,7 +54,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 9, 24, 15, 6, 13, 280, DateTimeKind.Local).AddTicks(3470));
+                        .HasDefaultValue(new DateTime(2021, 11, 2, 11, 18, 24, 245, DateTimeKind.Local).AddTicks(5777));
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uniqueidentifier");
@@ -84,11 +84,13 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("EditId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("EditId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("LastModifiedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ParentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ReplyTo")
@@ -139,6 +141,9 @@ namespace TaskPlusPlus.API.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<DateTime>("ApplyDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("From")
                         .HasColumnType("uniqueidentifier");
 
@@ -162,6 +167,72 @@ namespace TaskPlusPlus.API.Migrations
                     b.ToTable("FriendLists");
                 });
 
+            modelBuilder.Entity("TaskPlusPlus.API.Entities.Login", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.ToTable("Login");
+                });
+
+            modelBuilder.Entity("TaskPlusPlus.API.Entities.Profile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("SignupDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.ToTable("Profiles");
+                });
+
             modelBuilder.Entity("TaskPlusPlus.API.Entities.RoleSession", b =>
                 {
                     b.Property<Guid>("Id")
@@ -176,6 +247,9 @@ namespace TaskPlusPlus.API.Migrations
 
                     b.Property<bool>("Demoted")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime>("DemotedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uniqueidentifier");
@@ -194,6 +268,10 @@ namespace TaskPlusPlus.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BackgroundColor")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("BoardId")
                         .HasColumnType("uniqueidentifier");
 
@@ -210,7 +288,10 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("Removed")
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TaskCompelete")
                         .HasColumnType("bit");
 
                     b.Property<bool>("TaskRead")
@@ -259,7 +340,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 9, 24, 15, 6, 13, 285, DateTimeKind.Local).AddTicks(6819));
+                        .HasDefaultValue(new DateTime(2021, 11, 2, 11, 18, 24, 251, DateTimeKind.Local).AddTicks(2704));
 
                     b.Property<string>("DeviceType")
                         .IsRequired()
@@ -302,10 +383,13 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<Guid>("BoardId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("GrantedAccessAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 9, 24, 15, 6, 13, 285, DateTimeKind.Local).AddTicks(4274));
+                        .HasDefaultValue(new DateTime(2021, 11, 2, 11, 18, 24, 251, DateTimeKind.Local).AddTicks(1670));
 
                     b.Property<Guid>("ShareTo")
                         .HasColumnType("uniqueidentifier");
@@ -324,6 +408,9 @@ namespace TaskPlusPlus.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BackgroundColor")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("BoardId")
                         .HasColumnType("uniqueidentifier");
 
@@ -334,7 +421,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("Removed")
+                    b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
@@ -354,7 +441,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("AsignDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("Removed")
+                    b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("TagId")
@@ -384,7 +471,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 9, 24, 15, 6, 13, 285, DateTimeKind.Local).AddTicks(9357));
+                        .HasDefaultValue(new DateTime(2021, 11, 2, 11, 18, 24, 251, DateTimeKind.Local).AddTicks(5147));
 
                     b.Property<Guid>("Creator")
                         .HasColumnType("uniqueidentifier");
@@ -438,16 +525,14 @@ namespace TaskPlusPlus.API.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("SignupDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 9, 24, 15, 6, 13, 285, DateTimeKind.Local).AddTicks(5838));
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("User");
                 });
 #pragma warning restore 612, 618
         }

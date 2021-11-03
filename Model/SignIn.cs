@@ -7,10 +7,10 @@ namespace TaskPlusPlus.API.Model
 {
     public class SignIn
     {
-        public string phoneNumber { get; set; }
-        public string osVersion { get; set; }
-        public string deviceType { get; set; }
-        public string browerVersion { get; set; }
-        public string orientation { get; set; }
+        public string PhoneNumber { get; set; }
+        public string OsVersion { get; set; }
+        public string DeviceType { get; set; }
+        public string BrowerVersion { get; set; }
+        public string Orientation { get; set; }
     }
 }

@@ -16,6 +16,9 @@ namespace TaskPlusPlus.API.Entities
         [Required]
         public string Caption { get; set; }
 
+        public string BackgroundColor { get; set; }
+
+
         [Required]
         public bool Deleted { get; set; } 
 
