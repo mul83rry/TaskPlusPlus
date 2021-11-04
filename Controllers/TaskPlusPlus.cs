@@ -86,18 +86,18 @@ namespace TaskPlusPlus.API.Controllers
             return Ok(data.ToString());
         }
 
-        [HttpGet]
-        [Route("subtask/add/{accessToken}/{parentId:guid}/{caption}")]
-        public async Task<IActionResult> AddSubTaskAsync(string accessToken, Guid parentId, string caption)
+        [HttpPost]
+        [Route("addsubtask")]
+        public async Task<IActionResult> AddSubTaskAsync([FromBody] AddTask task)
         {
-            var data = await _taskPlusPlusRepository.AddSubTaskAsync(accessToken, parentId, caption);
+            var data = await _taskPlusPlusRepository.AddSubTaskAsync(task.AccessToken, task.ParentId, task.Caption);
             return Ok(data.ToString());
         }
-        [HttpGet]
-        [Route("subtask/edit/{accessToken}/{parentId:guid}/{caption}/{star:bool}")]
-        public async Task<IActionResult> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star)
+        [HttpPost]
+        [Route("editSubtask")]
+        public async Task<IActionResult> EditSubTaskAsync([FromBody] EditTask task)
         {
-            var data = await _taskPlusPlusRepository.EditSubTaskAsync(accessToken, parentId, caption, star);
+            var data = await _taskPlusPlusRepository.EditSubTaskAsync(task.AccessToken, task.Id, task.Caption, task.Star);
             return Ok(data.ToString());
         }
 

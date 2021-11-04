@@ -29,7 +29,7 @@ namespace TaskPlusPlus.API.Services
             var jsonData = new JArray();
             foreach (var item in res)
             {
-                var childs = await GetBoardsAllChilds(item.Id);
+                var childs =  GetBoardsAllChilds(item.Id);
                 jsonData.Add(new JObject
                 {
                     {"Id", item.Id },
@@ -37,7 +37,7 @@ namespace TaskPlusPlus.API.Services
                     {"Caption",  item.Caption },
                     {"CreationAt",  item.CreationAt },
                     {"ChildsCount", childs.Count },
-                    {"CommentsCount", await GetBoardsCommentsCount(childs)},
+                    {"CommentsCount", GetBoardsCommentsCount(childs)},
                     {"EmployeesCount", GetEmployeesCount(item.Id) }
                 });
             }
@@ -166,7 +166,7 @@ namespace TaskPlusPlus.API.Services
 
 
 
-        private async Task<List<Guid>> GetBoardsAllChilds(Guid boardId)
+        private List<Guid> GetBoardsAllChilds(Guid boardId)
         {
             var tasksList = new List<Guid>();
 
@@ -183,15 +183,19 @@ namespace TaskPlusPlus.API.Services
                 tasksList.Add(item.Id);
             }
 
-            foreach(var item in tasksList)
+           
+            for(var i = 0; i < tasksList.Count; i++)
             {
-                var subTasks = from subTask in context.Tasks.Where(t => t.ParentId == item && !t.Deleted)
+                var subTasks = from subTask in context.Tasks.Where(t => t.ParentId == tasksList[i] && !t.Deleted)
                              select new
                              {
-                                 subTask.Id
+                                 subTask.Id,
                              };
 
-                await subTasks.ForEachAsync(data => tasksList.Add(data.Id));
+                foreach(var data in subTasks)
+                {
+                    tasksList.Add(data.Id);
+                }
             }
 
 
@@ -199,7 +203,7 @@ namespace TaskPlusPlus.API.Services
         }
 
 
-        private async Task<int> GetBoardsCommentsCount(List<Guid> childs)
+        private int GetBoardsCommentsCount(List<Guid> childs)
         {
             var commentsList = new List<Guid>();
             foreach(var item in childs)
@@ -210,7 +214,10 @@ namespace TaskPlusPlus.API.Services
                                    comment.Id
                                };
 
-                await comments.ForEachAsync(data => commentsList.Add(data.Id));
+                foreach (var data in comments)
+                {
+                    commentsList.Add(data.Id);
+                }
             }
 
 

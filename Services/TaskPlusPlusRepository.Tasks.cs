@@ -110,6 +110,7 @@ namespace TaskPlusPlus.API.Services
                 Creator = user.UserId,
                 LastModifiedBy = user.UserId,
                 Compeleted = false,
+                Status = "ToDo",
             };
 
             await context.Tasks.AddAsync(subTask);
