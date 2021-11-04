@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using TaskPlusPlus.API.Model;
+using TaskPlusPlus.API.Models;
+using TaskPlusPlus.API.Models.Task;
 using TaskPlusPlus.API.Services;
 
 namespace TaskPlusPlus.API.Controllers
@@ -64,7 +65,7 @@ namespace TaskPlusPlus.API.Controllers
 
         [HttpPost]
         [Route("gettasks")]
-        public async Task<IActionResult> GetTaskAsync([FromBody] TaskModel task)
+        public async Task<IActionResult> GetTaskAsync([FromBody] TaskPlusPlus.API.Models.Task.Task task)
         {
             var data = await _taskPlusPlusRepository.GetTasksAsync(task.AccessToken, task.ParentId);
             return Ok(data);

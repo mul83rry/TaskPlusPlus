@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TaskPlusPlus.API.Model
+namespace TaskPlusPlus.API.Models
 {
-    public class DeleteBoard
+    public class BoardModel
     {
-        public Guid Id { get; set; }
         public string AccessToken { get; set; }
+        public string Caption { get; set; }
     }
 }
