@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TaskPlusPlus.API.Models;
 using TaskPlusPlus.API.Models.Task;
+using TaskPlusPlus.API.Models.Board;
+using TaskPlusPlus.API.Models.Comment;
+using TaskPlusPlus.API.Models.Friend;
 using TaskPlusPlus.API.Services;
 
 namespace TaskPlusPlus.API.Controllers
@@ -34,7 +37,7 @@ namespace TaskPlusPlus.API.Controllers
         
         [HttpPost]
         [Route("addboard")]
-        public async Task<IActionResult> AddBoardAsync([FromBody] BoardModel board)
+        public async Task<IActionResult> AddBoardAsync([FromBody] AddBoard board)
         {
             var data = await _taskPlusPlusRepository.AddBoardAsync(board.AccessToken, board.Caption);
             return Ok(data.ToString());
@@ -57,7 +60,7 @@ namespace TaskPlusPlus.API.Controllers
         }
         [HttpPost]
         [Route("getboards")]
-        public async Task<IActionResult> GetBoardsListAsync([FromBody] AccessCode accessToken)
+        public async Task<IActionResult> GetBoardsListAsync([FromBody] GetBoard accessToken)
         {
             var data = await _taskPlusPlusRepository.GetBoardsAsync(accessToken.AccessToken);
             return Ok(data);
@@ -65,7 +68,7 @@ namespace TaskPlusPlus.API.Controllers
 
         [HttpPost]
         [Route("gettasks")]
-        public async Task<IActionResult> GetTaskAsync([FromBody] TaskPlusPlus.API.Models.Task.Task task)
+        public async Task<IActionResult> GetTaskAsync([FromBody] GetTask task)
         {
             var data = await _taskPlusPlusRepository.GetTasksAsync(task.AccessToken, task.ParentId);
             return Ok(data);
@@ -102,11 +105,11 @@ namespace TaskPlusPlus.API.Controllers
             return Ok(data.ToString());
         }
 
-        [HttpGet]
-        [Route("task/compelete/{accessToken}/{parentId:guid}")]
-        public async Task<IActionResult> CompeletTaskAsync(string accessToken, Guid parentId)
+        [HttpPost]
+        [Route("compeletetask")]
+        public async Task<IActionResult> CompeletTaskAsync([FromBody] CompeleteTask task)
         {
-            var data = await _taskPlusPlusRepository.CompeleteTaskAsync(accessToken, parentId);
+            var data = await _taskPlusPlusRepository.CompeleteTaskAsync(task.AccessToken, task.Id);
             return Ok(data.ToString());
         }
 
@@ -120,100 +123,100 @@ namespace TaskPlusPlus.API.Controllers
         }
 
 
-        [HttpGet]
-        [Route("comment/add/{accessToken}/{parentId:guid}/{text}")]
+        [HttpPost]
+        [Route("addcomment")]
 
-        public async Task<IActionResult> AddCommentAsync(string accessToken, Guid parentId, string text)
+        public async Task<IActionResult> AddCommentAsync([FromBody] AddComment comment)
         {
-            var data = await _taskPlusPlusRepository.AddCommentAsync(accessToken, parentId, text);
+            var data = await _taskPlusPlusRepository.AddCommentAsync(comment.AccessToken, comment.Content, comment.ParentId, comment.ReplyTo);
             return Ok(data.ToString());
         }
 
 
-        [HttpGet]
-        [Route("comment/get/{accessToken}/{parentId:guid}")]
+        [HttpPost]
+        [Route("getcomments")]
 
-        public async Task<IActionResult> GetCommentsAsync(string accessToken, Guid parentId)
+        public async Task<IActionResult> GetCommentsAsync([FromBody] GetComment comment)
         {
-            var data = await _taskPlusPlusRepository.GetCommentsAsync(accessToken, parentId);
+            var data = await _taskPlusPlusRepository.GetCommentsAsync(comment.AccessToken, comment.ParentId);
             return Ok(data.ToString());
         }
 
 
-        [HttpGet]
-        [Route("comment/edit/{accessToken}/{parentId:guid}/{commentId:guid}/{text}")]
+        [HttpPost]
+        [Route("editcomment")]
 
-        public async Task<IActionResult> EditCommentAsync(string accessToken,Guid parentId, Guid commentId, string text)
+        public async Task<IActionResult> EditCommentAsync([FromBody] EditComment comment)
         {
-            var data = await _taskPlusPlusRepository.EditCommentAsync(accessToken, parentId, commentId, text);
+            var data = await _taskPlusPlusRepository.EditCommentAsync(comment.AccessToken, comment.ParentId, comment.Id, comment.Content);
             return Ok(data.ToString());
         }
 
 
-        [HttpGet]
-        [Route("comment/delete/{accessToken}/{parentId:guid}/{commentId:guid}")]
+        [HttpPost]
+        [Route("deletecomment")]
         
-        public async Task<IActionResult> DeleteCommentAsync(string accessToken,Guid parentId,Guid commentId)
+        public async Task<IActionResult> DeleteCommentAsync([FromBody] DeleteComment comment)
         {
-            var data = await _taskPlusPlusRepository.DeleteCommentAsync(accessToken, parentId, commentId);
+            var data = await _taskPlusPlusRepository.DeleteCommentAsync(comment.AccessToken, comment.ParentId, comment.Id);
             return Ok(data.ToString());
         }
 
 
-        [HttpGet]
-        [Route("friend/add/{accessToken}/{phoneNumber}")]
+        [HttpPost]
+        [Route("addfriend")]
 
-        public async Task<IActionResult> AddFriendAsync(string accessToken, string phoneNumber)
+        public async Task<IActionResult> AddFriendAsync([FromBody] AddFriend friend)
         {
-            var data = await _taskPlusPlusRepository.AddFriendAsync(accessToken, phoneNumber);
+            var data = await _taskPlusPlusRepository.AddFriendAsync(friend.AccessToken, friend.PhoneNumber);
             return Ok(data.ToString());
         }
 
 
-        [HttpGet]
-        [Route("friend/get/{accessToken}")]
+        [HttpPost]
+        [Route("getfriends")]
 
-        public async Task<IActionResult> GetFriendListAsync(string accessToken)
+        public async Task<IActionResult> GetFriendListAsync([FromBody] GetFriendList friend)
         {
-            var data = await _taskPlusPlusRepository.GetFriendsListAsync(accessToken);
+            var data = await _taskPlusPlusRepository.GetFriendsListAsync(friend.AccessToken);
             return Ok(data.ToString());
         }
 
-        [HttpGet]
-        [Route("friend/requests/get/{accessToken}")]
+        [HttpPost]
+        [Route("getfriendrequests")]
 
-        public async Task<IActionResult> GetFriendsRequestQueueAsync(string accessToken)
+        public async Task<IActionResult> GetFriendsRequestQueueAsync([FromBody] GetFriendRequest friend)
         {
-            var data = await _taskPlusPlusRepository.GetFriendRequestQueueAsync(accessToken);
-            return Ok(data.ToString());
-        }
-
-
-        [HttpGet]
-        [Route("friend/apply/{accessToken}/{requestId:guid}/{reply:bool}")]
-
-        public async Task<IActionResult> ApplyFriendRequestAsync(string accessToken, Guid requestId,bool reply)
-        {
-            var data = await _taskPlusPlusRepository.ApplyFriendRequestAsync(accessToken,requestId,reply);
+            var data = await _taskPlusPlusRepository.GetFriendRequestQueueAsync(friend.AccessToken);
             return Ok(data.ToString());
         }
 
 
-        [HttpGet]
-        [Route("friend/remove/{accessToken}/{requestId:guid}")]
+        [HttpPost]
+        [Route("applyrequestresponce")]
 
-        public async Task<IActionResult> RemoveFriendAsync(string accessToken, Guid requestId)
+        public async Task<IActionResult> ApplyFriendRequestResponceAsync([FromBody] RequestResponce request)
         {
-            var data = await _taskPlusPlusRepository.RemoveFriendAsync(accessToken, requestId);
+            var data = await _taskPlusPlusRepository.ApplyFriendRequestResponceAsync(request.AccessToken,request.Id,request.Responce);
             return Ok(data.ToString());
         }
 
-        [HttpGet]
-        [Route("board/share/{accessToken}/{boardId:guid}/{shareToList}")]
 
-        public async Task<IActionResult> ShareBoardAsync(string accessToken,Guid boardId,string shareToList)
+        [HttpPost]
+        [Route("removefriend")]
+
+        public async Task<IActionResult> RemoveFriendAsync([FromBody] RemoveFriend request)
         {
-            var data = await _taskPlusPlusRepository.ShareBoardAsync(accessToken, boardId, shareToList);
+            var data = await _taskPlusPlusRepository.RemoveFriendAsync(request.AccessToken, request.Id);
+            return Ok(data.ToString());
+        }
+
+        [HttpPost]
+        [Route("shareboard")]
+
+        public async Task<IActionResult> ShareBoardAsync([FromBody] ShareBoard share)
+        {
+            var data = await _taskPlusPlusRepository.ShareBoardAsync(share.AccessToken, share.BoardId, share.ShareToList);
             return Ok(data.ToString());
         }
 

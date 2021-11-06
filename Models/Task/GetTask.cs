@@ -2,7 +2,7 @@
 
 namespace TaskPlusPlus.API.Models.Task
 {
-    public sealed class Task : TaskModel
+    public sealed class GetTask : TaskModel
     {
         public Guid ParentId { get; set; }
     }

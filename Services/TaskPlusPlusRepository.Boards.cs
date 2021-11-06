@@ -98,29 +98,31 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-        public async Task<JObject> ShareBoardAsync(string accessToken, Guid boardId, string shareToList)
+        public async Task<JObject> ShareBoardAsync(string accessToken, Guid boardId, Guid[] shareToList)
         {
             var user = await GetUserSessionAsync(accessToken);
             var board = await context.Boards.SingleAsync(b => b.Id == boardId && b.CreatorId == user.UserId);
 
-            var usersIdToShare = shareToList.Split(',');
-            foreach (var item in usersIdToShare.Where(i => !string.IsNullOrEmpty(i)))
+           
+            foreach (var item in shareToList)
             {
-                var friend = await context.Profiles.SingleAsync(u => u.UserId == Guid.Parse(item));
+                var friend = await context.Profiles.SingleAsync(f => f.UserId == item);
 
-                if (await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == friend.Id)) continue;
+                if (await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == friend.UserId && !s.Deleted)) continue;
 
+                // return false if there is not any active friend ship between them
                 if (!(await context.FriendLists.AnyAsync(f =>
-                (f.From == user.UserId && f.To == friend.Id && !f.Removed && f.Accepted) ||
-                (f.To == user.UserId && f.From == friend.Id && !f.Removed && f.Accepted))))
+                (f.From == user.UserId && f.To == friend.UserId && !f.Removed && f.Accepted) ||
+                (f.To == user.UserId && f.From == friend.UserId && !f.Removed && f.Accepted))))
                     return JsonMap.FalseResult;
 
                 var share = new SharedBoard()
                 {
                     Id = Guid.NewGuid(),
                     BoardId = boardId,
-                    ShareTo = friend.Id,
+                    ShareTo = friend.UserId,
                     GrantedAccessAt = DateTime.Now,
+                    Deleted = false
                 };
 
                 await context.SharedBoards.AddAsync(share);

@@ -15,7 +15,7 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> AddBoardAsync(string accessToken, string caption);
         Task<JObject> UpdateBoardAsync(string accessToken, Guid boardId, string caption);
         Task<JObject> DeleteBoardAsync(string accessToken, Guid boardId);
-        Task<JObject> ShareBoardAsync(string accessToken, Guid boardId, string shareToList);
+        Task<JObject> ShareBoardAsync(string accessToken, Guid boardId, Guid[] shareToList);
         #endregion
 
         #region Tasks
@@ -31,7 +31,7 @@ namespace TaskPlusPlus.API.Services
         #endregion
 
         #region comments
-        Task<JObject> AddCommentAsync(string accessToken, Guid parentId, string text);
+        Task<JObject> AddCommentAsync(string accessToken, string content, Guid parentId, Guid replyTo);
         Task<string> GetCommentsAsync(string accessToken, Guid parentId);
         Task<JObject> EditCommentAsync(string accessToken, Guid parentId, Guid commentId, string text);
         Task<JObject> DeleteCommentAsync(string accessToken, Guid parentId, Guid commentId);
@@ -41,7 +41,7 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> AddFriendAsync(string accessToken, string phoneNumber);
         Task<string> GetFriendsListAsync(string accessToken);
         Task<string> GetFriendRequestQueueAsync(string accessToken);
-        Task<JObject> ApplyFriendRequestAsync(string accessToken, Guid requestId, bool reply);
+        Task<JObject> ApplyFriendRequestResponceAsync(string accessToken, Guid requestId, bool reply);
         Task<JObject> RemoveFriendAsync(string accessToken, Guid requestId);
         #endregion
 

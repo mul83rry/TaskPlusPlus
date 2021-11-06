@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TaskPlusPlus.API.Models
+namespace TaskPlusPlus.API.Models.Board
 {
-    public class EditBoard
+    public sealed class DeleteBoard : BoardModel
     {
         public Guid Id { get; set; }
-        public string Caption { get; set; }
-        public string AccessToken { get; set; }
     }
 }

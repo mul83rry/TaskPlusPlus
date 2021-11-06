@@ -1,6 +1,7 @@
 ﻿using TaskPlusPlus.API.Entities;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
+using TaskPlusPlus.API.Models.Comment;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace TaskPlusPlus.API.Services
 {
     public partial class TaskPlusPlusRepository
     {
-        public async Task<JObject> AddCommentAsync(string accessToken, Guid parentId, string text)
+        public async Task<JObject> AddCommentAsync(string accessToken, string content, Guid parentId, Guid replyTo)
         {
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
@@ -20,16 +21,22 @@ namespace TaskPlusPlus.API.Services
             var comment = new Comment()
             {
                 Id = Guid.NewGuid(),
-                Text = text,
+                Text = content,
                 Sender = user.UserId,
-                ReplyTo = parentId,
+                ReplyTo = replyTo,
+                ParentId = parentId,
                 CreationDate = DateTime.Now,
                 Deleted = false,
                 EditId = Guid.NewGuid(),
                 LastModifiedBy = user.UserId
             };
 
+
+            if (replyTo.ToString() == "00000000-0000-0000-0000-000000000000")
+                comment.ReplyTo = comment.Id;
+
             comment.EditId = comment.Id;
+
 
             await context.Comments.AddAsync(comment);
             await context.SaveChangesAsync();
@@ -45,26 +52,30 @@ namespace TaskPlusPlus.API.Services
             if (!isOwner && !await HasPermissions(user.UserId, parentId, Permissions.ReadComment)) return JsonMap.FalseResult.ToString();
 
             var res = from comment in context.Comments
-                      .Where(c => c.ReplyTo == parentId && c.Deleted == false && c.EditId == c.Id).OrderBy(c => c.CreationDate)
+                      .Where(c => c.ParentId == parentId && !c.Deleted && c.EditId == c.Id).OrderBy(c => c.CreationDate)
                       select new
                       {
                           comment.Id,
                           comment.Text,
                           comment.Sender,
                           comment.CreationDate,
-                          comment.LastModifiedBy
+                          comment.LastModifiedBy,
+                          comment.ReplyTo
                       };
 
             var jsonData = new JArray();
             foreach (var item in res)
             {
+                var replyInfo = await GetReplyInfo(item.ReplyTo, item.Id);
                 jsonData.Add(new JObject
                     {
-                        {"id", item.Id },
-                        {"text",  item.Text },
-                        {"creationAt",  item.CreationDate },
-                        { "sender",(await GetUser(item.Sender)).FirstName.ToString() },
-                        { "lastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName.ToString() }
+                        { "Id", item.Id },
+                        { "Content",  item.Text },
+                        { "CreationAt",  item.CreationDate },
+                        { "Sender",(await GetUser(item.Sender)).FirstName },
+                        { "Reply", replyInfo.Content},
+                        { "ReplySender", replyInfo.Sender},
+                        { "LastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName }
                     });
             }
             return jsonData.ToString();
@@ -86,14 +97,20 @@ namespace TaskPlusPlus.API.Services
                 Id = Guid.NewGuid(),
                 Text = text,
                 Sender = oldComment.Sender,
-                ReplyTo = parentId,
+                ReplyTo = oldComment.ReplyTo,
                 CreationDate = oldComment.CreationDate,
                 Deleted = false,
                 EditId = Guid.NewGuid(),
                 LastModifiedBy = user.UserId,
+                ParentId = oldComment.ParentId,
             };
 
+            if (oldComment.Id == oldComment.ReplyTo)
+                comment.ReplyTo = comment.Id;
+
             oldComment.EditId = comment.Id;
+            comment.EditId = comment.Id;
+
 
             await context.Comments.AddAsync(comment);
             await context.SaveChangesAsync();
@@ -116,6 +133,38 @@ namespace TaskPlusPlus.API.Services
             await context.SaveChangesAsync();
 
             return JsonMap.TrueResult;
+        }
+
+
+        private async Task<ReplyInfo> GetReplyInfo(Guid replyId, Guid id)
+        {
+            ReplyInfo replyInfo = new ReplyInfo()
+            {
+                Sender = string.Empty,
+                Content = string.Empty
+            };
+
+            if (id == replyId)
+                return replyInfo;
+
+            if (!(await context.Comments.AnyAsync(c => !c.Deleted && c.Id == replyId)))
+                return replyInfo;
+
+            var reply = await context.Comments.SingleAsync(c => !c.Deleted && c.Id == replyId);
+
+            if (reply.EditId != reply.Id)
+            {
+                if (!(await context.Comments.AnyAsync(c => !c.Deleted && c.Id == reply.EditId)))
+                    return replyInfo;
+
+                reply = await context.Comments.SingleAsync(c => !c.Deleted && c.Id == reply.EditId);
+            }
+
+            replyInfo.Sender = (await GetUser(reply.Sender)).FirstName;
+            replyInfo.Content = reply.Text;
+
+
+            return replyInfo;
         }
     }
 }
