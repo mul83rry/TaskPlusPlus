@@ -46,7 +46,7 @@ namespace TaskPlusPlus.API.Services
                         {"Star",  item.Star },
                         {"CreationAt",  item.CreationAt },
                         {"LastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName.ToString()},
-                        {"Tags", (await GetTaskTagListAsync(item.Id))},
+                        {"Tags", (JToken.FromObject((await GetTaskTagListAsync(item.Id))))},
                         {"Compeleted" , item.Compeleted},
                         {"SubTasksCount" , GetChildsCount(item.Id)},
                         {"SubCommentsCount" , GetCommentsCount(item.Id)},

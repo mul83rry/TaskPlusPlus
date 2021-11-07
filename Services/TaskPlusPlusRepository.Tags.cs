@@ -1,4 +1,5 @@
 ﻿using TaskPlusPlus.API.Entities;
+using TaskPlusPlus.API.Models.Task;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System;
@@ -23,7 +24,8 @@ namespace TaskPlusPlus.API.Services
                 BoardId = boardId,
                 Caption = caption,
                 Deleted = false,
-                CreationDate = DateTime.Now
+                CreationDate = DateTime.Now,
+                BackgroundColor = "#a244fa",
             };
 
             await context.Tags.AddAsync(tag);
@@ -37,7 +39,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken);
             var boardId = await GetBoardIdAsync(parentId);
 
-            var res = from tag in context.Tags.OrderBy(t => t.CreationDate)
+            var res = from tag in context.Tags.Where(t => !t.Deleted).OrderBy(t => t.CreationDate)
                       join sharedBoard in context.SharedBoards
                       .Where(shared => shared.ShareTo == user.UserId && boardId == shared.BoardId)
                       on tag.BoardId equals sharedBoard.BoardId
@@ -45,21 +47,19 @@ namespace TaskPlusPlus.API.Services
                       {
                           tag.Id,
                           tag.Caption,
-                          tag.Deleted,
+                          tag.BackgroundColor
                       };
 
             var jsonData = new JArray();
             foreach (var item in res)
             {
-                if (item.Deleted == false)
+              
+                jsonData.Add(new JObject
                 {
-                    jsonData.Add(new JObject
-                    {
-                        {"id", item.Id },
-                        {"caption",  item.Caption }
-                    });
-                }
-
+                   {"Id", item.Id },
+                   {"Caption",  item.Caption },
+                   {"Color", item.BackgroundColor}
+                });
             }
             return jsonData.ToString();
         }
@@ -69,6 +69,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(acessToken);
             if (!await IsOwnerOfBoard(user.UserId, taskId)) return JsonMap.FalseResult;
             if (!await context.Tags.AnyAsync(t => t.Id == tagId && !t.Deleted)) return JsonMap.FalseResult;
+            if (!await context.Tasks.AnyAsync(t => t.Id == taskId && !t.Deleted)) return JsonMap.FalseResult;
             if (await context.TagsList.AnyAsync(t => !t.Deleted && t.TagId == tagId && t.TaskId == taskId)) return JsonMap.FalseResult;
 
             var taskTag = new TagsList()
@@ -86,30 +87,28 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-        private async Task<JArray> GetTaskTagListAsync(Guid taskId)
+        private async Task<List<TaskTags>> GetTaskTagListAsync(Guid taskId)
         {
-            var res = from tagList in context.TagsList.Where(t => t.TaskId == taskId).OrderBy(t => t.AsignDate)
+            var res = from tagList in context.TagsList.Where(t => t.TaskId == taskId && !t.Deleted).OrderBy(t => t.AsignDate)
                       select new
                       {
                           tagList.Id,
                           tagList.TagId,
-                          tagList.Deleted
                       };
 
-            var jsonData = new JArray();
+            var data = new List<TaskTags>();
             foreach (var item in res)
             {
-                if (item.Deleted == false)
+                var listItem = new TaskTags()
                 {
-                    jsonData.Add(new JObject
-                    {
-                        {"id", item.Id },
-                        {"caption",  (await context.Tags.SingleOrDefaultAsync(t => t.Id == item.TagId)).Caption }
-                    });
-                }
+                    Id = item.Id,
+                    Caption = (await context.Tags.SingleOrDefaultAsync(t => t.Id == item.TagId)).Caption,
+                    Color = (await context.Tags.SingleOrDefaultAsync(t => t.Id == item.TagId)).BackgroundColor
+                };
+                data.Add(listItem);
             }
 
-            return jsonData;
+            return data;
         }
 
 
