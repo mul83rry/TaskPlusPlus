@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Threading.Tasks;
+using TaskPlusPlus.API.Models.Task;
 
 namespace TaskPlusPlus.API.Services
 {
@@ -16,6 +17,7 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> UpdateBoardAsync(string accessToken, Guid boardId, string caption);
         Task<JObject> DeleteBoardAsync(string accessToken, Guid boardId);
         Task<JObject> ShareBoardAsync(string accessToken, Guid boardId, Guid[] shareToList);
+        Task<JObject> RemoveBoardShareAsync(string accessToken, Guid boardId, Guid shareId);
         #endregion
 
         #region Tasks
@@ -48,18 +50,21 @@ namespace TaskPlusPlus.API.Services
         #region Tags
         Task<JObject> AddTagAsync(string accessToken, Guid boardId, string caption);
         Task<string> GetTagListAsync(string accessToken, Guid parentId);
+        Task<JObject> EditTagAsync(string accessToken, Guid boardId, Guid tagId, string color);
         Task<JObject> RemoveTagAsync(string accessToken, Guid boardId, Guid tagId);
         Task<JObject> AsignTagToTaskAsync(string accessToken, Guid taskId, Guid tagId);
         Task<JObject> RemoveTagFromTaskAsync(string accessToken, Guid taskId, Guid taskTagId);
         #endregion
 
         #region Roles
-        Task<JObject> AddRoleAsync(string accessToken, Guid boardId, string caption, bool readTask, bool writeTask, bool readComment, bool writeComment, string tagList);
+        Task<JObject> AddRoleAsync(string accessToken, Guid boardId, string caption, string color, bool readTask, bool writeTask, bool completeTask, bool readComment, bool writeComment);
+        Task<JObject> EditRoleAsync(string accessToken, Guid roleId, Guid boardId, string color, bool readTask, bool writeTask, bool completeTask, bool readComment, bool writeComment);
+        Task<JObject> AsignTagToRoleAsync(string accessToken, Guid boardId, Guid roleId, Guid tagId);
+        Task<JObject> RemoveTagFromRoleAsync(string accessToken, Guid boardId, Guid roleTagId);
         Task<string> GetBoardRolesAsync(string accessToken, Guid boardId);
         Task<JObject> AsignRoleToEmployeesAsync(string accessToken, Guid boardId, Guid RoleId, Guid EmployeesId);
         Task<JObject> RemoveRoleFromBoardAsync(string accessToken, Guid boardId, Guid roleId);
         Task<JObject> DemoteEmployeesRoleAsync(string accessToken, Guid boardId, Guid roleSessionId);
-        Task<string> GetEmployeesRolesAsync(string accessToken, Guid boardId);
         Task<string> GetEmployeesAsync(string accessToken, Guid boardId);
         #endregion
     }

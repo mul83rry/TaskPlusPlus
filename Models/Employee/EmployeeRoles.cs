@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TaskPlusPlus.API.Models.Task
+namespace TaskPlusPlus.API.Models.Employee
 {
-    public sealed class TaskTags
+    public class EmployeeRoles
     {
-        public Guid TagId { get; set; }
-        public Guid TagListId { get; set; }
+        public Guid RoleId { get; set; }
+        public Guid RoleSessionId { get; set; }
         public string Caption { get; set; }
         public string Color { get; set; }
     }

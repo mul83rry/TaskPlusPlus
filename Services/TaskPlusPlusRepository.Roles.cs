@@ -1,4 +1,6 @@
 ﻿using TaskPlusPlus.API.Entities;
+using TaskPlusPlus.API.Models.Employee;
+using TaskPlusPlus.API.Models.Roles;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System;
@@ -10,45 +12,112 @@ namespace TaskPlusPlus.API.Services
 {
     public partial class TaskPlusPlusRepository
     {
-        public async Task<JObject> AddRoleAsync(string accessToken, Guid boardId, string caption, bool readTask, bool writeTask, bool readComment, bool writeComment, string tagList)
+        public async Task<JObject> AddRoleAsync(string accessToken, Guid boardId, string caption, string color, bool readTask, bool writeTask, bool completeTask, bool readComment, bool writeComment)
         {
             var user = await GetUserSessionAsync(accessToken);
-            if (!(await context.Boards.AnyAsync(b => b.Id == boardId && b.CreatorId == user.UserId))) return JsonMap.FalseResult;
+            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
 
             var role = new Roles()
             {
                 Id = Guid.NewGuid(),
                 BoardId = boardId,
                 Caption = caption,
-                TaskRead = readTask,
+                TaskRead = readTask || writeTask,
                 TaskWrite = writeTask,
-                CommentRead = readComment,
+                TaskCompelete = completeTask,
+                CommentRead = readComment || writeComment,
                 CommentWrite = writeComment,
                 Deleted = false,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                BackgroundColor = color,
             };
 
             await context.Roles.AddAsync(role);
             await context.SaveChangesAsync();
 
-            if (tagList == "none") return JsonMap.TrueResult;
+            return JsonMap.TrueResult;
+        }
 
-            var tagListArray = tagList.Split(',');
+        public async Task<JObject> EditRoleAsync(string accessToken, Guid roleId, Guid boardId, string color, bool readTask, bool writeTask, bool completeTask, bool readComment, bool writeComment)
+        {
+            var user = await GetUserSessionAsync(accessToken);
+            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await context.Roles.AnyAsync(r => r.Id == roleId && !r.Deleted))) return JsonMap.FalseResult;
 
-            foreach (var item in tagListArray)
+            var role = await context.Roles.SingleAsync(r => r.Id == roleId && !r.Deleted);
+
+            role.BackgroundColor = color;
+            role.TaskRead = readTask;
+            role.TaskWrite = writeTask;
+            role.TaskCompelete = completeTask;
+            role.CommentRead = readComment;
+            role.CommentWrite = writeComment;
+
+            await context.SaveChangesAsync();
+
+            return JsonMap.TrueResult;
+        }
+
+        public async Task<JObject> AsignTagToRoleAsync(string accessToken, Guid boardId, Guid roleId, Guid tagId)
+        {
+            var user = await GetUserSessionAsync(accessToken);
+
+            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await context.Roles.AnyAsync(r => r.Id == roleId && !r.Deleted))) return JsonMap.FalseResult;
+            if (!(await context.Tags.AnyAsync(t => t.Id == tagId && !t.Deleted))) return JsonMap.FalseResult;
+
+            var roleTag = new RolesTagList()
             {
-                if (string.IsNullOrEmpty(item)) continue;
-                if (!await context.Tags.AnyAsync(t => !t.Deleted && t.Id == Guid.Parse(item) && t.BoardId == boardId)) continue;
+                Id = Guid.NewGuid(),
+                TagId = tagId,
+                RoleId = roleId,
+                Removed = false,
+                AsignDate = DateTime.Now
+            };
 
-                var roleTag = new RolesTagList()
+            await context.RolesTagList.AddAsync(roleTag);
+            await context.SaveChangesAsync();
+
+            return JsonMap.TrueResult;
+        }
+
+        private List<RoleTag> GetRoleTags(Guid boardId, Guid roleId)
+        {
+            var jsonData = new List<RoleTag>();
+
+            var res = from roleTags in context.RolesTagList.Where(r => r.RoleId == roleId && !r.Removed).OrderBy(r => r.AsignDate)
+                      select new
+                      {
+                          roleTags.Id,
+                          roleTags.TagId
+                      };
+
+            foreach(var item in res)
+            {
+                var tag = context.Tags.Single(t => t.Id == item.TagId);
+
+                jsonData.Add(new RoleTag()
                 {
-                    Id = Guid.NewGuid(),
-                    RoleId = role.Id,
-                    TagId = Guid.Parse(item)
-                };
-
-                await context.RolesTagList.AddAsync(roleTag);
+                    RoleTagId = item.Id,
+                    TagId =  tag.Id,
+                    Caption = tag.Caption,
+                    Color = tag.BackgroundColor,
+                });
             }
+
+            return jsonData;
+        }
+
+        public async Task<JObject> RemoveTagFromRoleAsync(string accessToken, Guid boardId, Guid roleTagId)
+        {
+            var user = await GetUserSessionAsync(accessToken);
+
+            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await context.RolesTagList.AnyAsync(r => r.Id == roleTagId && !r.Removed))) return JsonMap.FalseResult;
+
+            var roleTag = await context.RolesTagList.SingleAsync(r => r.Id == roleTagId && !r.Removed);
+
+            roleTag.Removed = true;
 
             await context.SaveChangesAsync();
 
@@ -60,7 +129,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken);
 
             var jsonData = new JArray();
-            if (!(await context.SharedBoards.AnyAsync(s => s.ShareTo == user.UserId && s.BoardId == boardId))) return jsonData.ToString();
+            if (!(await context.SharedBoards.AnyAsync(s => s.ShareTo == user.UserId && s.BoardId == boardId && !s.Deleted))) return jsonData.ToString();
 
             var res = from roles in context.Roles.Where(r => r.BoardId == boardId && !r.Deleted).OrderBy(s => s.CreatedAt)
                       select new
@@ -70,19 +139,24 @@ namespace TaskPlusPlus.API.Services
                           roles.TaskRead,
                           roles.TaskWrite,
                           roles.CommentRead,
-                          roles.CommentWrite
+                          roles.CommentWrite,
+                          roles.TaskCompelete,
+                          roles.BackgroundColor,
                       };
 
             foreach (var item in res)
             {
                 jsonData.Add(new JObject
                 {
-                    {"id",item.Id},
-                    {"caption",item.Caption},
-                    {"readTask",item.TaskRead},
-                    {"writeTask",item.TaskWrite},
-                    {"readComment",item.CommentRead},
-                    {"writeComment",item.CommentWrite},
+                    {"Id",item.Id},
+                    {"Caption",item.Caption},
+                    {"ReadTask",item.TaskRead},
+                    {"WriteTask",item.TaskWrite},
+                    {"ReadComment",item.CommentRead},
+                    {"WriteComment",item.CommentWrite},
+                    {"CompleteTask", item.TaskCompelete },
+                    {"Color", item.BackgroundColor},
+                    {"Tags", JToken.FromObject(GetRoleTags(boardId,item.Id))}
                 });
             }
 
@@ -94,7 +168,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, boardId);
             var selfPromote = await IsOwnerOfBoard(employeesId, boardId);
-            var isShared = await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == employeesId);
+            var isShared = await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == employeesId && !s.Deleted);
             var roleExist = await context.Roles.AnyAsync(r => r.Id == roleId && !r.Deleted);
 
             if (!isOwner || !isShared || !roleExist || selfPromote) return JsonMap.FalseResult;
@@ -144,52 +218,47 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-        public async Task<string> GetEmployeesRolesAsync(string accessToken, Guid boardId)
-        {
-            var user = await GetUserSessionAsync(accessToken);
+        private async Task<List<EmployeeRoles>> GetEmployeesRolesAsync(Guid userId, Guid boardId)
+        {  
+            var jsonData = new List<EmployeeRoles>();
 
-            var jsonData = new JArray();
-            if (!await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == user.UserId)) return jsonData.ToString();
-
-            var roleSessions = from roleSession in context.RoleSessions.Where(r => r.BoardId == boardId && !r.Demoted).OrderBy(r => r.AsignDate)
+            var roleSessions = from roleSession in context.RoleSessions.Where(r => userId == r.UserId && r.BoardId == boardId && !r.Demoted).OrderBy(r => r.AsignDate)
                                select new
                                {
                                    roleSession.Id,
-                                   roleSession.UserId,
                                    roleSession.RoleId,
-                                   roleSession.AsignDate
                                };
 
             foreach (var item in roleSessions)
             {
-                var employe = await GetUser(item.UserId);
                 var role = await context.Roles.SingleOrDefaultAsync(r => r.Id == item.RoleId);
 
-                jsonData.Add(new JObject{
-                    {"id",item.Id},
-                    {"firstName", employe.FirstName },
-                    {"lastName", employe.LastName },
-                    {"role", role.Caption },
-                    {"date", item.AsignDate }
+                jsonData.Add(new EmployeeRoles()
+                {
+                    RoleId = role.Id,
+                    RoleSessionId = item.Id,
+                    Caption = role.Caption,
+                    Color = role.BackgroundColor,
                 });
             }
 
-            return jsonData.ToString();
+            return jsonData;
         }
 
         public async Task<string> GetEmployeesAsync(string accessToken, Guid boardId)
         {
             var user = await GetUserSessionAsync(accessToken);
             var board = await context.Boards.SingleOrDefaultAsync(b => b.Id == boardId);
-            var isShared = await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == user.UserId);
+            var isShared = await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == user.UserId && !s.Deleted);
 
             var jsonData = new JArray();
             if (board == null || !isShared) return jsonData.ToString();
 
-            var res = from sharedBoard in context.SharedBoards.Where(s => s.BoardId == boardId && s.ShareTo != board.CreatorId).OrderBy(s => s.GrantedAccessAt)
+            var res = from sharedBoard in context.SharedBoards.Where(s => s.BoardId == boardId && s.ShareTo != board.CreatorId && !s.Deleted).OrderBy(s => s.GrantedAccessAt)
                       select new
                       {
                           sharedBoard.ShareTo,
+                          sharedBoard.Id,
                       };
 
             foreach (var item in res)
@@ -197,9 +266,13 @@ namespace TaskPlusPlus.API.Services
                 var shareTo = await GetUser(item.ShareTo);
 
                 jsonData.Add(new JObject {
-                    {"id",item.ShareTo },
-                    {"firstName", shareTo.FirstName},
-                    {"lastName", shareTo.LastName}
+                    {"ShareId", item.Id},
+                    {"Id", shareTo.UserId},
+                    {"FirstName", shareTo.FirstName},
+                    {"LastName", shareTo.LastName},
+                    {"Bio", shareTo.Bio},
+                    {"Image", shareTo.Image},
+                    {"Roles", JToken.FromObject(await GetEmployeesRolesAsync(shareTo.UserId,boardId))}
                 });
             }
 

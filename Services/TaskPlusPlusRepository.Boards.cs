@@ -16,7 +16,7 @@ namespace TaskPlusPlus.API.Services
 
             var res = from board in context.Boards.Where(b => !b.Deleted)
                       join sharedBoard in context.SharedBoards
-                      .Where(shared => shared.ShareTo == user.UserId).OrderBy(s => s.GrantedAccessAt)
+                      .Where(shared => shared.ShareTo == user.UserId && !shared.Deleted).OrderBy(s => s.GrantedAccessAt)
                       on board.Id equals sharedBoard.BoardId
                       select new
                       {
@@ -229,13 +229,28 @@ namespace TaskPlusPlus.API.Services
 
         private int GetEmployeesCount(Guid boardId)
         {
-            var shares = from shareBoard in context.SharedBoards.Where(s => !s.Deleted && s.BoardId == boardId)
+            var shares = from shareBoard in context.SharedBoards.Where(s => !s.Deleted && s.BoardId == boardId && !s.Deleted)
                          select new
                          {
                              shareBoard.Id
                          };
 
             return shares.Count();
+        }
+
+
+        public async Task<JObject> RemoveBoardShareAsync(string accessToken, Guid boardId, Guid shareId)
+        {
+            var user = await GetUserSessionAsync(accessToken);
+
+            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
+
+            var share = await context.SharedBoards.SingleOrDefaultAsync(s => s.Id == shareId && s.ShareTo != user.UserId);
+
+            share.Deleted = true;
+
+            await context.SaveChangesAsync();
+            return JsonMap.TrueResult;
         }
     }
 }

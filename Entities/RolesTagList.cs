@@ -16,5 +16,10 @@ namespace TaskPlusPlus.API.Entities
         [Required]
         public Guid TagId { get; set; }
 
+        [Required]
+        public bool Removed { get; set; }
+
+        [Required]
+        public DateTime AsignDate { get; set; }
     }
 }

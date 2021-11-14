@@ -35,7 +35,7 @@ namespace TaskPlusPlus.API.Entities
         public bool CommentWrite { get; set; }
 
         [Required]
-        public bool Deleted { get; set; } // todo: Rename to 'Delete'
+        public bool Deleted { get; set; } 
 
         [Required]
         public DateTime CreatedAt { get; set; }

@@ -41,7 +41,7 @@ namespace TaskPlusPlus.API.Services
 
             var res = from tag in context.Tags.Where(t => !t.Deleted).OrderBy(t => t.CreationDate)
                       join sharedBoard in context.SharedBoards
-                      .Where(shared => shared.ShareTo == user.UserId && boardId == shared.BoardId)
+                      .Where(shared => shared.ShareTo == user.UserId && boardId == shared.BoardId && !shared.Deleted)
                       on tag.BoardId equals sharedBoard.BoardId
                       select new
                       {
@@ -64,9 +64,9 @@ namespace TaskPlusPlus.API.Services
             return jsonData.ToString();
         }
 
-        public async Task<JObject> AsignTagToTaskAsync(string acessToken, Guid taskId, Guid tagId)
+        public async Task<JObject> AsignTagToTaskAsync(string accessToken, Guid taskId, Guid tagId)
         {
-            var user = await GetUserSessionAsync(acessToken);
+            var user = await GetUserSessionAsync(accessToken);
             if (!await IsOwnerOfBoard(user.UserId, taskId)) return JsonMap.FalseResult;
             if (!await context.Tags.AnyAsync(t => t.Id == tagId && !t.Deleted)) return JsonMap.FalseResult;
             if (!await context.Tasks.AnyAsync(t => t.Id == taskId && !t.Deleted)) return JsonMap.FalseResult;
@@ -99,11 +99,13 @@ namespace TaskPlusPlus.API.Services
             var data = new List<TaskTags>();
             foreach (var item in res)
             {
+                var tag = await context.Tags.SingleOrDefaultAsync(t => t.Id == item.TagId);
                 var listItem = new TaskTags()
                 {
-                    Id = item.Id,
-                    Caption = (await context.Tags.SingleOrDefaultAsync(t => t.Id == item.TagId)).Caption,
-                    Color = (await context.Tags.SingleOrDefaultAsync(t => t.Id == item.TagId)).BackgroundColor
+                    TagListId = item.Id,
+                    TagId = item.TagId,
+                    Caption = tag.Caption,
+                    Color = tag.BackgroundColor
                 };
                 data.Add(listItem);
             }
@@ -122,6 +124,21 @@ namespace TaskPlusPlus.API.Services
 
             var tag = await context.Tags.SingleOrDefaultAsync(t => t.Id == tagId);
             tag.Deleted = true;
+            await context.SaveChangesAsync();
+
+            return JsonMap.TrueResult;
+        }
+
+        public async Task<JObject> EditTagAsync(string accessToken, Guid boardId, Guid tagId, string color)
+        {
+            var user = await GetUserSessionAsync(accessToken);
+            var isOwner = await IsOwnerOfBoard(user.UserId, boardId);
+
+            if (!isOwner) return JsonMap.FalseResult;
+
+            var tag = await context.Tags.SingleOrDefaultAsync(t => t.Id == tagId);
+
+            tag.BackgroundColor = color;
             await context.SaveChangesAsync();
 
             return JsonMap.TrueResult;
@@ -173,8 +190,8 @@ namespace TaskPlusPlus.API.Services
             var hasRole = await context.RoleSessions.AnyAsync(r => !r.Demoted && r.BoardId == boardId && r.UserId == userId);
             if (!hasRole) return true;
 
-            var rolesTags = from roleSession in context.RoleSessions.Where(r => !r.Demoted && r.BoardId == boardId && r.UserId == userId)
-                            join roleTags in context.RolesTagList on roleSession.RoleId equals roleTags.RoleId
+            var rolesTags = from roleSession in context.RoleSessions.Where(r => !r.Demoted && r.BoardId == boardId && r.UserId == userId )
+                            join roleTags in context.RolesTagList.Where(r => !r.Removed) on roleSession.RoleId equals roleTags.RoleId
                             select new
                             {
                                 roleTags.Id,

@@ -18,7 +18,7 @@ namespace TaskPlusPlus.API.Services
             var jsonData = new JArray();
             // todo: switch to signalR
             if (!(await HaveAccessToTask(user.UserId, boardId))) return jsonData.ToString();
-            if (!isOwner && !await HasRoleAccess(boardId, user.UserId, Permissions.ReadTask)) return jsonData.ToString();
+            if (!isOwner && !(await HasRoleAccess(boardId, user.UserId, Permissions.ReadTask))) return jsonData.ToString();
 
 
             var res = from task in context.Tasks
@@ -36,7 +36,7 @@ namespace TaskPlusPlus.API.Services
             // todo: can be simplest
             foreach (var item in res)
             {
-                if (!isOwner && !await HasTagAccess(boardId, user.UserId, item.Id))
+                if (!isOwner && !(await HasTagAccess(boardId, user.UserId, item.Id)))
                     continue;
 
                 jsonData.Add(new JObject
@@ -46,7 +46,7 @@ namespace TaskPlusPlus.API.Services
                         {"Star",  item.Star },
                         {"CreationAt",  item.CreationAt },
                         {"LastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName.ToString()},
-                        {"Tags", (JToken.FromObject((await GetTaskTagListAsync(item.Id))))},
+                        {"Tags", JToken.FromObject(await GetTaskTagListAsync(item.Id))},
                         {"Compeleted" , item.Compeleted},
                         {"SubTasksCount" , GetChildsCount(item.Id)},
                         {"SubCommentsCount" , GetCommentsCount(item.Id)},
@@ -173,7 +173,7 @@ namespace TaskPlusPlus.API.Services
             }
 
             var board = await context.Boards.SingleAsync(b => b.Id == pId);
-            return await context.SharedBoards.AnyAsync(s => s.BoardId == board.Id && s.ShareTo == userId);
+            return await context.SharedBoards.AnyAsync(s => s.BoardId == board.Id && s.ShareTo == userId && !s.Deleted);
         }
 
         public async Task<JObject> CompeleteTaskAsync(string accessToken, Guid parentId)
