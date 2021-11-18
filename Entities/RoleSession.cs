@@ -20,6 +20,9 @@ namespace TaskPlusPlus.API.Entities
         public Guid UserId { get; set; }
 
         [Required]
+        public Guid ShareSession { set; get; }
+
+        [Required]
         public bool Demoted { get; set; }
 
         [Required]

@@ -171,7 +171,11 @@ namespace TaskPlusPlus.API.Services
             var isShared = await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == employeesId && !s.Deleted);
             var roleExist = await context.Roles.AnyAsync(r => r.Id == roleId && !r.Deleted);
 
+            
+
             if (!isOwner || !isShared || !roleExist || selfPromote) return JsonMap.FalseResult;
+
+            var shareSession = await context.SharedBoards.SingleOrDefaultAsync(s => s.BoardId == boardId && s.ShareTo == employeesId && !s.Deleted);
 
             var employeesRole = new RoleSession()
             {
@@ -180,6 +184,7 @@ namespace TaskPlusPlus.API.Services
                 RoleId = roleId,
                 BoardId = boardId,
                 Demoted = false,
+                ShareSession = shareSession.Id,
                 AsignDate = DateTime.Now
             };
 
@@ -223,6 +228,7 @@ namespace TaskPlusPlus.API.Services
             var jsonData = new List<EmployeeRoles>();
 
             var roleSessions = from roleSession in context.RoleSessions.Where(r => userId == r.UserId && r.BoardId == boardId && !r.Demoted).OrderBy(r => r.AsignDate)
+                               join sharedboard in context.SharedBoards.Where(s => s.BoardId == boardId && s.ShareTo == userId && !s.Deleted) on roleSession.ShareSession equals sharedboard.Id
                                select new
                                {
                                    roleSession.Id,

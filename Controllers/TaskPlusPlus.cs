@@ -9,6 +9,7 @@ using TaskPlusPlus.API.Models.Friend;
 using TaskPlusPlus.API.Models.Tag;
 using TaskPlusPlus.API.Models.Roles;
 using TaskPlusPlus.API.Models.Employee;
+using TaskPlusPlus.API.Models.Profile;
 using TaskPlusPlus.API.Services;
 
 namespace TaskPlusPlus.API.Controllers
@@ -372,6 +373,24 @@ namespace TaskPlusPlus.API.Controllers
         public async Task<IActionResult> RemoveBoardShareAsync([FromBody] RemoveEmployee employee)
         {
             var data = await _taskPlusPlusRepository.RemoveBoardShareAsync(employee.AccessToken, employee.BoardId, employee.ShareId);
+            return Ok(data.ToString());
+        }
+
+
+        [HttpPost]
+        [Route("changeprofile")]
+
+        public async Task<IActionResult> ChangeProfileAsync([FromBody] SetProfile profile)
+        {
+            var data = await _taskPlusPlusRepository.ChangeProfileAsync(profile.AccessToken, profile.FirstName, profile.LastName, profile.Bio, profile.Img, profile.Email, profile.PhoneNumber);
+            return Ok(data.ToString());
+        }
+
+        [HttpPost]
+        [Route("getprofile")]
+        public async Task<IActionResult> GetProfileInfoAsync([FromBody] GetProfile profile)
+        {
+            var data = await _taskPlusPlusRepository.GetProfileInfoAsync(profile.AccessToken);
             return Ok(data.ToString());
         }
     }

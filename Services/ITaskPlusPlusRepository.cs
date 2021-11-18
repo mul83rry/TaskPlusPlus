@@ -67,5 +67,13 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> DemoteEmployeesRoleAsync(string accessToken, Guid boardId, Guid roleSessionId);
         Task<string> GetEmployeesAsync(string accessToken, Guid boardId);
         #endregion
+
+        #region Profile
+
+        Task<JObject> ChangeProfileAsync(string accessToken, string firstName, string lastName, string bio, string img, string email, string phoneNumber);
+
+        Task<string> GetProfileInfoAsync(string accessToken);
+
+        #endregion
     }
 }
