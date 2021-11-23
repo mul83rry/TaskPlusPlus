@@ -20,18 +20,13 @@ namespace TaskPlusPlus.API.DbContexts
         public DbSet<AssignTo> AssignTos { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<TagsList> TagsList { get; set; }
-
         public DbSet<FriendList> FriendLists { get; set; }
-
         public DbSet<RolesTagList> RolesTagList { get; set; }
-
         public DbSet<Roles> Roles { get; set; }
-
         public DbSet<RoleSession> RoleSessions { get; set; }
-
         public DbSet<Login> Login { get; set; }
-
         public DbSet<Profile> Profiles { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,13 +37,11 @@ namespace TaskPlusPlus.API.DbContexts
             modelBuilder.Entity<Session>().HasIndex(u => u.AccessToken).IsUnique();
             modelBuilder.Entity<SharedBoard>().HasIndex(u => u.Id).IsUnique();
             modelBuilder.Entity<Task>().HasIndex(u => u.Id).IsUnique();
-            modelBuilder.Entity<User>().HasIndex(u => u.Id).IsUnique();
             modelBuilder.Entity<AssignTo>().HasIndex(u => u.Id).IsUnique();
             modelBuilder.Entity<Tag>().HasIndex(u => u.Id).IsUnique();
             modelBuilder.Entity<FriendList>().HasIndex(u => u.Id).IsUnique();
             modelBuilder.Entity<Login>().HasIndex(u => u.Id).IsUnique();
             modelBuilder.Entity<Profile>().HasIndex(u => u.Id).IsUnique();
-            //modelBuilder.Entity<User>().HasIndex(u => u.PhoneNumber).IsUnique();
 
             modelBuilder.Entity<Board>().Property(p => p.Deleted).HasDefaultValue(false);
             modelBuilder.Entity<Board>().Property(p => p.CreationAt).HasDefaultValue(DateTime.Now);

@@ -7,6 +7,11 @@ namespace TaskPlusPlus.API.Services
 {
     public interface ITaskPlusPlusRepository
     {
+
+        #region Public
+        Task<string> GetRecentChangesAsync(string accessToken);
+        #endregion
+
         #region Users
         Task<JObject> SigninAsync(string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation);
         #endregion
@@ -73,6 +78,12 @@ namespace TaskPlusPlus.API.Services
         Task<JObject> ChangeProfileAsync(string accessToken, string firstName, string lastName, string bio, string img, string email, string phoneNumber);
 
         Task<string> GetProfileInfoAsync(string accessToken);
+
+        #endregion
+
+        #region Messages
+
+        Task<string> GetSystemMessagesAsync(string accessToken);
 
         #endregion
     }

@@ -14,9 +14,9 @@ namespace TaskPlusPlus.API.Services
         {
             var user = await GetUserSessionAsync(accessToken);
 
-            var res = from board in context.Boards.Where(b => !b.Deleted)
+            var res = from board in context.Boards.Where(b => !b.Deleted).OrderBy(b => b.CreationAt)
                       join sharedBoard in context.SharedBoards
-                      .Where(shared => shared.ShareTo == user.UserId && !shared.Deleted).OrderBy(s => s.GrantedAccessAt)
+                      .Where(shared => shared.ShareTo == user.UserId && !shared.Deleted)
                       on board.Id equals sharedBoard.BoardId
                       select new
                       {

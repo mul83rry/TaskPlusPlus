@@ -1,5 +1,7 @@
 ﻿using TaskPlusPlus.API.DbContexts;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace TaskPlusPlus.API.Services
@@ -32,6 +34,31 @@ namespace TaskPlusPlus.API.Services
             if (!RoleAccess || !tagAccess) return false;
 
             return true;
+        }
+
+        public async Task<string> GetRecentChangesAsync(string accessToken)
+        {
+            var user = await GetUserSessionAsync(accessToken);
+
+            var pendingFriendRequests = from friends in context.FriendLists.Where(f => f.Pending && f.To == user.UserId)
+                                        select new 
+                                        {
+                                            friends.Id,
+                                        };
+
+            var newMessages = from msg in context.Messages.Where(m => !m.Seen && m.UserId == user.UserId)
+                              select new
+                              {
+                                  msg.Id,
+                              };
+
+            var JsonData = new JObject
+            {
+                new JProperty("NewMessages",newMessages.Count().ToString()),
+                new JProperty("NewFriends", pendingFriendRequests.Count().ToString())
+            };
+
+            return JsonData.ToString();
         }
 
     }

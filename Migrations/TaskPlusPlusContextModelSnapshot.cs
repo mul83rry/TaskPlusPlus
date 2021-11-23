@@ -52,7 +52,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 11, 17, 16, 15, 26, 722, DateTimeKind.Local).AddTicks(5047));
+                        .HasDefaultValue(new DateTime(2021, 11, 20, 9, 3, 10, 452, DateTimeKind.Local).AddTicks(3312));
 
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uniqueidentifier");
@@ -186,6 +186,33 @@ namespace TaskPlusPlus.API.Migrations
                         .IsUnique();
 
                     b.ToTable("Login");
+                });
+
+            modelBuilder.Entity("TaskPlusPlus.API.Entities.Message", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreationAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Seen")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("TaskPlusPlus.API.Entities.Profile", b =>
@@ -347,7 +374,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 11, 17, 16, 15, 26, 726, DateTimeKind.Local).AddTicks(8449));
+                        .HasDefaultValue(new DateTime(2021, 11, 20, 9, 3, 10, 456, DateTimeKind.Local).AddTicks(6657));
 
                     b.Property<string>("DeviceType")
                         .IsRequired()
@@ -396,7 +423,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("GrantedAccessAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 11, 17, 16, 15, 26, 726, DateTimeKind.Local).AddTicks(7210));
+                        .HasDefaultValue(new DateTime(2021, 11, 20, 9, 3, 10, 456, DateTimeKind.Local).AddTicks(5553));
 
                     b.Property<Guid>("ShareTo")
                         .HasColumnType("uniqueidentifier");
@@ -478,7 +505,7 @@ namespace TaskPlusPlus.API.Migrations
                     b.Property<DateTime>("CreationAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2021, 11, 17, 16, 15, 26, 727, DateTimeKind.Local).AddTicks(1014));
+                        .HasDefaultValue(new DateTime(2021, 11, 20, 9, 3, 10, 456, DateTimeKind.Local).AddTicks(9074));
 
                     b.Property<Guid>("Creator")
                         .HasColumnType("uniqueidentifier");
@@ -509,37 +536,6 @@ namespace TaskPlusPlus.API.Migrations
                         .IsUnique();
 
                     b.ToTable("Tasks");
-                });
-
-            modelBuilder.Entity("TaskPlusPlus.API.Entities.User", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("LastName")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("SignupDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
-
-                    b.ToTable("User");
                 });
 #pragma warning restore 612, 618
         }

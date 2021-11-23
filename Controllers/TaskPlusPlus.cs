@@ -10,6 +10,7 @@ using TaskPlusPlus.API.Models.Tag;
 using TaskPlusPlus.API.Models.Roles;
 using TaskPlusPlus.API.Models.Employee;
 using TaskPlusPlus.API.Models.Profile;
+using TaskPlusPlus.API.Models.Messages;
 using TaskPlusPlus.API.Services;
 
 namespace TaskPlusPlus.API.Controllers
@@ -391,6 +392,22 @@ namespace TaskPlusPlus.API.Controllers
         public async Task<IActionResult> GetProfileInfoAsync([FromBody] GetProfile profile)
         {
             var data = await _taskPlusPlusRepository.GetProfileInfoAsync(profile.AccessToken);
+            return Ok(data.ToString());
+        }
+
+        [HttpPost]
+        [Route("getsystemmessages")]
+        public async Task<IActionResult> GetSystemMessagesAsync([FromBody] GetMessages message)
+        {
+            var data = await _taskPlusPlusRepository.GetSystemMessagesAsync(message.AccessToken);
+            return Ok(data.ToString());
+        }
+
+        [HttpPost]
+        [Route("getrecentchanges")]
+        public async Task<IActionResult> GetRecentChangesAsync([FromBody] GetRecentChanges changes)
+        {
+            var data = await _taskPlusPlusRepository.GetRecentChangesAsync(changes.AccessToken);
             return Ok(data.ToString());
         }
     }
