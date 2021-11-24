@@ -33,7 +33,7 @@ namespace TaskPlusPlus.API.Controllers
         }
         
         
-        [HttpGet]
+        [HttpGet("addfakedata")]
         public async Task<IActionResult> AddFakeDataAsync()
         {
             await _taskPlusPlusRepository.AddFakeData();
