@@ -31,6 +31,15 @@ namespace TaskPlusPlus.API.Controllers
         {
             return Ok("welcome to task++");
         }
+        
+        
+        [HttpGet]
+        public async Task<IActionResult> AddFakeDataAsync()
+        {
+            await _taskPlusPlusRepository.AddFakeData();
+
+            return Ok("Done");
+        }
 
         [HttpPost]
         [Route("signin")]

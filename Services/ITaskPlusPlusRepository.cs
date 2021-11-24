@@ -7,6 +7,7 @@ namespace TaskPlusPlus.API.Services
 {
     public interface ITaskPlusPlusRepository
     {
+        Task AddFakeData();
 
         #region Public
         Task<string> GetRecentChangesAsync(string accessToken);
