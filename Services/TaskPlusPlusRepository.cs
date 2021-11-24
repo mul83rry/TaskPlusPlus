@@ -87,8 +87,8 @@ namespace TaskPlusPlus.API.Services
             {
                 var newShareTo = new Entities.SharedBoard()
                 {
-                    ShareTo = Guid.NewGuid,
-                    BoardId = Guid.NewGuid
+                    ShareTo = Guid.NewGuid(),
+                    BoardId = Guid.NewGuid()
                 };
 
                 await context.SharedBoards.AddAsync(newShareTo);
