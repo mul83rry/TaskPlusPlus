@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Threading.Tasks;
+using TaskPlusPlus.API.Extensions;
 
 namespace TaskPlusPlus.API.Services
 {
@@ -15,6 +16,8 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> SigninAsync(string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation)
         {
+            if (!phoneNumber.IsValidPhoneNumber()) return JsonMap.FalseResult;
+
             var userExist = await context.Login.AnyAsync(u => u.PhoneNumber == phoneNumber);
 
             if (userExist)
@@ -85,7 +88,7 @@ namespace TaskPlusPlus.API.Services
 
             return JsonMap.GetSuccesfullAccessToken(newSession.AccessToken);
         }
-
+        
 
         private async Task<Profile> GetUser(Guid userId) => await context.Profiles.SingleOrDefaultAsync(u => u.UserId == userId);
     }
