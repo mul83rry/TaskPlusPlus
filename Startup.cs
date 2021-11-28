@@ -22,7 +22,25 @@ namespace TaskPlusPlus.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
+            /*services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                    });
+            });*/
+
+            services.AddCors(option =>
+            {
+                option.AddPolicy("MyCorse", builder =>
+                {
+                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                });
+            });
+
             services.AddControllers();
 
             services.AddScoped<ITaskPlusPlusRepository, TaskPlusPlusRepository>();
@@ -30,14 +48,19 @@ namespace TaskPlusPlus.API
             services.AddDbContext<TaskPlusPlusContext>(options =>
             {
                 options.UseSqlServer(
-                    @"Server=.;Database=TaskPlusPlusDB;Trusted_Connection=True;MultipleActiveResultSets = True");
+                    @"Server=.;Database=TaskPlusPlusDB;User Id=taskppir;Password=@yrS5j01JtVrmoob;
+                    Trusted_Connection=True;MultipleActiveResultSets = True");
             });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            app.UseCors(options =>
+                options.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+            );
 
             if (env.IsDevelopment())
             {

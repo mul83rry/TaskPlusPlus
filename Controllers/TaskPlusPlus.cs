@@ -12,11 +12,12 @@ using TaskPlusPlus.API.Models.Employee;
 using TaskPlusPlus.API.Models.Profile;
 using TaskPlusPlus.API.Models.Messages;
 using TaskPlusPlus.API.Services;
+using Microsoft.AspNetCore.Cors;
 
 namespace TaskPlusPlus.API.Controllers
 {
     [Route("api")]
-    [ApiController]
+    [ApiController]    
     public class TaskPlusPlus : ControllerBase
     {
         private ITaskPlusPlusRepository _taskPlusPlusRepository;
@@ -31,8 +32,8 @@ namespace TaskPlusPlus.API.Controllers
         {
             return Ok("welcome to task++");
         }
-        
-        
+
+
         [HttpGet("addfakedata")]
         public async Task<IActionResult> AddFakeDataAsync()
         {
@@ -43,12 +44,13 @@ namespace TaskPlusPlus.API.Controllers
 
         [HttpPost]
         [Route("signin")]
+        [EnableCors("MyCorse")]
         public async Task<IActionResult> SigninAsync([FromBody] SignIn signIn)
         {
             var data = await _taskPlusPlusRepository.SigninAsync(signIn.PhoneNumber, signIn.OsVersion, signIn.DeviceType, signIn.BrowerVersion, signIn.Orientation);
             return Ok(data.ToString());
         }
-        
+
         [HttpPost]
         [Route("addboard")]
         public async Task<IActionResult> AddBoardAsync([FromBody] AddBoard board)
@@ -132,7 +134,7 @@ namespace TaskPlusPlus.API.Controllers
 
         public async Task<IActionResult> DeleteTaskAsync([FromBody] DeleteTask task)
         {
-            var data = await _taskPlusPlusRepository.DeleteTaskAsync(task.AccessToken, task.Id );
+            var data = await _taskPlusPlusRepository.DeleteTaskAsync(task.AccessToken, task.Id);
             return Ok(data.ToString());
         }
 
@@ -169,7 +171,7 @@ namespace TaskPlusPlus.API.Controllers
 
         [HttpPost]
         [Route("deletecomment")]
-        
+
         public async Task<IActionResult> DeleteCommentAsync([FromBody] DeleteComment comment)
         {
             var data = await _taskPlusPlusRepository.DeleteCommentAsync(comment.AccessToken, comment.ParentId, comment.Id);
@@ -211,7 +213,7 @@ namespace TaskPlusPlus.API.Controllers
 
         public async Task<IActionResult> ApplyFriendRequestResponceAsync([FromBody] RequestResponce request)
         {
-            var data = await _taskPlusPlusRepository.ApplyFriendRequestResponceAsync(request.AccessToken,request.Id,request.Responce);
+            var data = await _taskPlusPlusRepository.ApplyFriendRequestResponceAsync(request.AccessToken, request.Id, request.Responce);
             return Ok(data.ToString());
         }
 
@@ -298,7 +300,7 @@ namespace TaskPlusPlus.API.Controllers
 
         public async Task<IActionResult> AsignTagToRoleAsync([FromBody] AsignTagRole role)
         {
-            var data = await _taskPlusPlusRepository.AsignTagToRoleAsync(role.AccessToken,role.BoardId,role.RoleId,role.TagId);
+            var data = await _taskPlusPlusRepository.AsignTagToRoleAsync(role.AccessToken, role.BoardId, role.RoleId, role.TagId);
             return Ok(data.ToString());
         }
 
@@ -307,7 +309,7 @@ namespace TaskPlusPlus.API.Controllers
 
         public async Task<IActionResult> RemoveTagFromRoleAsync([FromBody] RemoveTagRole role)
         {
-            var data = await _taskPlusPlusRepository.RemoveTagFromRoleAsync(role.AccessToken,role.BoardId,role.RoleTagId);
+            var data = await _taskPlusPlusRepository.RemoveTagFromRoleAsync(role.AccessToken, role.BoardId, role.RoleTagId);
             return Ok(data.ToString());
         }
 
