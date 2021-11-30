@@ -15,7 +15,7 @@ namespace TaskPlusPlus.API.Services
 
 
         public async Task<JObject> SigninAsync(string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation)
-        {
+        {            
             if (!phoneNumber.IsValidPhoneNumber()) return JsonMap.FalseResult;
 
             var userExist = await context.Login.AnyAsync(u => u.PhoneNumber == phoneNumber);

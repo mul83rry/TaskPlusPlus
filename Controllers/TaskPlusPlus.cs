@@ -35,20 +35,27 @@ namespace TaskPlusPlus.API.Controllers
             return Ok("welcome to task++");
         }
 
-        [HttpPost]
-        [Route("test")]
-        public IActionResult Test()
+        #region Test
+
+        /*[HttpGet(("hey"))]
+        public IActionResult Hey()
         {
-            return Ok("this is ok");
+            return Ok("Hey!");
         }
 
-        [HttpGet("addfakedata")]
-        public async Task<IActionResult> AddFakeDataAsync()
+        [HttpPost(("hey1"))]
+        public IActionResult Hey1()
         {
-            await _taskPlusPlusRepository.AddFakeData();
-
-            return Ok("Done");
+            return Ok("Hey1");
         }
+        
+        [HttpPost(("hey2"))]
+        public async Task<IActionResult> Hey2()
+        {
+            return Ok("Hey2");
+        }*/
+
+        #endregion
 
         [HttpPost]
         [Route("signin")]

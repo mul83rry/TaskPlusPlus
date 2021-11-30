@@ -43,8 +43,7 @@ namespace TaskPlusPlus.API
             services.AddDbContext<TaskPlusPlusContext>(options =>
             {
                 options.UseSqlServer(
-                    @"Server=.;Database=TaskPlusPlusDB;User Id=taskppir;Password=@yrS5j01JtVrmoob;
-                    Trusted_Connection=True;MultipleActiveResultSets = True");
+                    @"Server=.;Database=TaskPlusPlusDB;User Id=taskppir;Password=@yrS5j01JtVrmoob;");
             });
         }
 
