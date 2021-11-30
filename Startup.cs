@@ -25,8 +25,8 @@ namespace TaskPlusPlus.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
-            services.AddCors(options => 
+
+            services.AddCors(options =>
             options.AddPolicy("AllowSpecificOrigin",
             builder =>
             {
@@ -35,7 +35,7 @@ namespace TaskPlusPlus.API
                 .AllowAnyMethod()
                 .AllowAnyHeader();
             }));
-            
+
             services.AddControllers();
 
             services.AddScoped<ITaskPlusPlusRepository, TaskPlusPlusRepository>();
@@ -45,6 +45,12 @@ namespace TaskPlusPlus.API
                 options.UseSqlServer(
                     @"Server=.;Database=TaskPlusPlusDB;User Id=taskppir;Password=@yrS5j01JtVrmoob;");
             });
+
+            Logger.Init();
+            System.AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
+            {
+                Logger.Log(eventArgs.Exception.ToString() + System.Environment.NewLine + System.Environment.NewLine);
+            };
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
