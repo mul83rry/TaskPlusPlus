@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Web.Http;
+using Microsoft.AspNetCore.Cors;
 
 namespace TaskPlusPlus.API
 {
@@ -19,28 +21,21 @@ namespace TaskPlusPlus.API
 
         public IConfiguration Configuration { get; }
 
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            /*services.AddCors(options =>
+            
+            services.AddCors(options => 
+            options.AddPolicy("AllowSpecificOrigin",
+            builder =>
             {
-                options.AddDefaultPolicy(
-                    builder =>
-                    {
-                        builder.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                    });
-            });*/
-
-            services.AddCors(option =>
-            {
-                option.AddPolicy("MyCorse", builder =>
-                {
-                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-                });
-            });
-
+                builder
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+            }));
+            
             services.AddControllers();
 
             services.AddScoped<ITaskPlusPlusRepository, TaskPlusPlusRepository>();
@@ -56,18 +51,28 @@ namespace TaskPlusPlus.API
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseCors(options =>
-                options.AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-            );
+
+            app.UseCors("AllowSpecificOrigin");
+
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseHttpsRedirection();
+
+            /*app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    // using Microsoft.AspNetCore.Http;
+                    ctx.Context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+                }
+            });
+            */
             app.UseRouting();
+
 
             app.UseAuthorization();
 

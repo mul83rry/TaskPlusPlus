@@ -12,12 +12,13 @@ using TaskPlusPlus.API.Models.Employee;
 using TaskPlusPlus.API.Models.Profile;
 using TaskPlusPlus.API.Models.Messages;
 using TaskPlusPlus.API.Services;
-using Microsoft.AspNetCore.Cors;
+using System.Web.Http.Cors;
 
 namespace TaskPlusPlus.API.Controllers
 {
     [Route("api")]
-    [ApiController]    
+    [ApiController]
+    [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "Access-Control-Allow-Origin")]
     public class TaskPlusPlus : ControllerBase
     {
         private ITaskPlusPlusRepository _taskPlusPlusRepository;
@@ -27,12 +28,19 @@ namespace TaskPlusPlus.API.Controllers
             _taskPlusPlusRepository = taskPlusPlusRepository;
         }
 
+
         [HttpGet]
         public IActionResult Welcome()
         {
             return Ok("welcome to task++");
         }
 
+        [HttpPost]
+        [Route("test")]
+        public IActionResult Test()
+        {
+            return Ok("this is ok");
+        }
 
         [HttpGet("addfakedata")]
         public async Task<IActionResult> AddFakeDataAsync()
@@ -44,7 +52,6 @@ namespace TaskPlusPlus.API.Controllers
 
         [HttpPost]
         [Route("signin")]
-        [EnableCors("MyCorse")]
         public async Task<IActionResult> SigninAsync([FromBody] SignIn signIn)
         {
             var data = await _taskPlusPlusRepository.SigninAsync(signIn.PhoneNumber, signIn.OsVersion, signIn.DeviceType, signIn.BrowerVersion, signIn.Orientation);
