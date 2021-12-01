@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
+using TaskPlusPlus.API.DbContexts;
 
 namespace TaskPlusPlus.API.Services
 {
@@ -13,6 +13,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> ChangeProfileAsync(string accessToken, string firstName, string lastName, string bio, string img, string email, string phoneNumber)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var profile = await context.Profiles.SingleAsync(p => p.UserId == user.UserId);
 
@@ -35,6 +36,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<string> GetProfileInfoAsync(string accessToken)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
 
             var profile = await context.Profiles.SingleAsync(p => p.UserId == user.UserId);

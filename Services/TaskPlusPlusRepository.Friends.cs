@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using TaskPlusPlus.API.DbContexts;
 
 namespace TaskPlusPlus.API.Services
 {
@@ -11,6 +12,7 @@ namespace TaskPlusPlus.API.Services
     {
         public async Task<JObject> AddFriendAsync(string accessToken, string phoneNumber)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var friendUser = await context.Profiles.SingleOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
             if (friendUser == null) return JsonMap.FalseResult;
@@ -42,6 +44,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<string> GetFriendsListAsync(string accessToken)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
 
             var res = from friendsList in context.FriendLists.Where(f => (user.UserId == f.From || user.UserId == f.To) && f.Accepted && !f.Removed).OrderBy(f => f.RequestDate)
@@ -77,6 +80,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<string> GetFriendRequestQueueAsync(string accessToken)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var res = from FList in context.FriendLists.Where(f => user.UserId == f.To && f.Pending).OrderBy(f => f.RequestDate)
                       select new
@@ -104,6 +108,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> ApplyFriendRequestResponceAsync(string accessToken, Guid requestId, bool reply)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var request = await context.FriendLists.SingleOrDefaultAsync(f => f.Id == requestId);
             if (user.UserId != request.To) return JsonMap.FalseResult;
@@ -120,6 +125,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> RemoveFriendAsync(string accessToken, Guid requestId)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var request = await context.FriendLists.SingleAsync(f => f.Id == requestId);
             if (request.From != user.UserId && request.To != user.UserId) return JsonMap.FalseResult;

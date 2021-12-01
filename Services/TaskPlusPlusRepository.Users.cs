@@ -4,20 +4,25 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Threading.Tasks;
 using TaskPlusPlus.API.Extensions;
+using TaskPlusPlus.API.DbContexts;
 
 namespace TaskPlusPlus.API.Services
 {
     public partial class TaskPlusPlusRepository
     {
-        private async Task<Session> GetUserSessionAsync(string accessToken) => string.IsNullOrEmpty(accessToken)
-            ? throw new ArgumentNullException("not valid argument")
-            : await context.Sessions.SingleAsync(s => s.AccessToken == accessToken);
-
+        private async Task<Session> GetUserSessionAsync(string accessToken)
+        {
+            using var context = new TaskPlusPlusContext();
+            return string.IsNullOrEmpty(accessToken)
+                ? throw new ArgumentNullException("not valid argument")
+                : await context.Sessions.SingleAsync(s => s.AccessToken == accessToken);
+        }
 
         public async Task<JObject> SigninAsync(string phoneNumber, string osVersion, string deviceType, string browerVersion, string orientation)
-        {            
+        {
             if (!phoneNumber.IsValidPhoneNumber()) return JsonMap.FalseResult;
 
+            using var context = new TaskPlusPlusContext();
             var userExist = await context.Login.AnyAsync(u => u.PhoneNumber == phoneNumber);
 
             if (userExist)
@@ -88,8 +93,12 @@ namespace TaskPlusPlus.API.Services
 
             return JsonMap.GetSuccesfullAccessToken(newSession.AccessToken);
         }
-        
 
-        private async Task<Profile> GetUser(Guid userId) => await context.Profiles.SingleOrDefaultAsync(u => u.UserId == userId);
+
+        private async Task<Profile> GetUser(Guid userId)
+        {
+            using var context = new TaskPlusPlusContext();
+            return await context.Profiles.SingleOrDefaultAsync(u => u.UserId == userId);
+        }
     }
 }

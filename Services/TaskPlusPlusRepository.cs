@@ -8,9 +8,9 @@ namespace TaskPlusPlus.API.Services
 {
     public partial class TaskPlusPlusRepository : ITaskPlusPlusRepository, IDisposable
     {
-        private TaskPlusPlusContext context;
+        //private TaskPlusPlusContext context;
 
-        public TaskPlusPlusRepository(TaskPlusPlusContext context) => this.context = context ?? throw new ArgumentNullException(nameof(context));
+        //public TaskPlusPlusRepository(TaskPlusPlusContext context) => this.context = context ?? throw new ArgumentNullException(nameof(context));
 
         /* public async Task AddFakeData()
          {
@@ -225,15 +225,15 @@ namespace TaskPlusPlus.API.Services
 
         public void Dispose()
         {
-            Dispose(true);
+            //Dispose(true);
             GC.SuppressFinalize(this);
         }
-        protected virtual void Dispose(bool disposing)
+        /*protected virtual void Dispose(bool disposing)
         {
             if (!disposing || context == null) return;
             context.Dispose();
             context = null;
-        }
+        }*/
 
 
         private async Task<bool> HasPermissions(Guid userId, Guid parentId, Permissions permissionType)
@@ -249,6 +249,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<string> GetRecentChangesAsync(string accessToken)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
 
             var pendingFriendRequests = from friends in context.FriendLists.Where(f => f.Pending && f.To == user.UserId)

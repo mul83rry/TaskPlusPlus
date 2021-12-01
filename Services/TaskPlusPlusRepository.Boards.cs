@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using TaskPlusPlus.API.DbContexts;
 
 namespace TaskPlusPlus.API.Services
 {
@@ -12,6 +13,7 @@ namespace TaskPlusPlus.API.Services
     {
         public async Task<string> GetBoardsAsync(string accessToken)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
 
             var res = from board in context.Boards.Where(b => !b.Deleted).OrderBy(b => b.CreationAt)
@@ -46,6 +48,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> AddBoardAsync(string accessToken, string caption)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
 
             var board = new Board()
@@ -72,6 +75,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> UpdateBoardAsync(string accessToken, Guid boardId, string caption)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
 
             // check accessibility
@@ -87,6 +91,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> DeleteBoardAsync(string accessToken, Guid boardId)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             // todo: check
             // check accessibility
@@ -100,6 +105,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> ShareBoardAsync(string accessToken, Guid boardId, Guid[] shareToList)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var board = await context.Boards.SingleAsync(b => b.Id == boardId && b.CreatorId == user.UserId);
 
@@ -136,6 +142,7 @@ namespace TaskPlusPlus.API.Services
 
         private async Task<bool> IsOwnerOfBoard(Guid userId, Guid parentId)
         {
+            using var context = new TaskPlusPlusContext();
             var pId = parentId;
             var tempTask = new Entities.Task();
 
@@ -153,6 +160,7 @@ namespace TaskPlusPlus.API.Services
 
         private async Task<Guid> GetBoardIdAsync(Guid parentId)
         {
+            using var context = new TaskPlusPlusContext();
             var boardId = parentId;
             var tempTask = new Entities.Task();
             while (true)
@@ -170,6 +178,7 @@ namespace TaskPlusPlus.API.Services
 
         private List<Guid> GetBoardsAllChilds(Guid boardId)
         {
+            using var context = new TaskPlusPlusContext();
             var tasksList = new List<Guid>();
 
             var tasks = from task in context.Tasks.Where(t => t.ParentId == boardId && !t.Deleted)
@@ -207,6 +216,7 @@ namespace TaskPlusPlus.API.Services
 
         private int GetBoardsCommentsCount(List<Guid> childs)
         {
+            using var context = new TaskPlusPlusContext();
             var commentsList = new List<Guid>();
             foreach(var item in childs)
             {
@@ -229,6 +239,7 @@ namespace TaskPlusPlus.API.Services
 
         private int GetEmployeesCount(Guid boardId)
         {
+            using var context = new TaskPlusPlusContext();
             var shares = from shareBoard in context.SharedBoards.Where(s => !s.Deleted && s.BoardId == boardId && !s.Deleted)
                          select new
                          {
@@ -241,6 +252,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> RemoveBoardShareAsync(string accessToken, Guid boardId, Guid shareId)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
 
             if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;

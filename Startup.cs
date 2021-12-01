@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Web.Http;
 using Microsoft.AspNetCore.Cors;
+using System;
 
 namespace TaskPlusPlus.API
 {
@@ -40,11 +41,7 @@ namespace TaskPlusPlus.API
 
             services.AddScoped<ITaskPlusPlusRepository, TaskPlusPlusRepository>();
 
-            services.AddDbContext<TaskPlusPlusContext>(options =>
-            {
-                options.UseSqlServer(
-                    @"Server=.;Database=TaskPlusPlusDB;User Id=taskppir;Password=@yrS5j01JtVrmoob;");
-            });
+            services.AddDbContext<TaskPlusPlusContext>();
 
             Logger.Init();
             System.AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>

@@ -6,10 +6,23 @@ namespace TaskPlusPlus.API.DbContexts
 {
     public class TaskPlusPlusContext : DbContext
     {
-        public TaskPlusPlusContext(DbContextOptions<TaskPlusPlusContext> options)
+        /*public TaskPlusPlusContext(DbContextOptions<TaskPlusPlusContext> options)
            : base(options)
         {
+        }*/
+        public TaskPlusPlusContext()
+           : base()
+        {
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer(@"Server=.;Database=TaskPlusPlusDB;User Id=taskppir;Password=@yrS5j01JtVrmoob;");
+            }
+        }
+
 
         public DbSet<Comment> Comments { get; set; }
         public DbSet<File> Files { get; set; }

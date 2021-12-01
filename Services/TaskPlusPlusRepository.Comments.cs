@@ -5,7 +5,7 @@ using TaskPlusPlus.API.Models.Comment;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
+using TaskPlusPlus.API.DbContexts;
 
 namespace TaskPlusPlus.API.Services
 {
@@ -13,6 +13,7 @@ namespace TaskPlusPlus.API.Services
     {
         public async Task<JObject> AddCommentAsync(string accessToken, string content, Guid parentId, Guid replyTo)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
             if (await HaveAccessToTask(user.UserId, parentId) == false) return JsonMap.FalseResult;
@@ -46,6 +47,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<string> GetCommentsAsync(string accessToken, Guid parentId)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
             if (await HaveAccessToTask(user.UserId, parentId) == false) return JsonMap.FalseResult.ToString();
@@ -83,6 +85,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> EditCommentAsync(string accessToken, Guid parentId, Guid commentId, string text)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
             if (await HaveAccessToTask(user.UserId, parentId) == false) return JsonMap.FalseResult;
@@ -120,6 +123,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> DeleteCommentAsync(string accessToken, Guid parentId, Guid commentId)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
             if (await HaveAccessToTask(user.UserId, parentId) == false) return JsonMap.FalseResult;
@@ -138,6 +142,7 @@ namespace TaskPlusPlus.API.Services
 
         private async Task<ReplyInfo> GetReplyInfo(Guid replyId, Guid id)
         {
+            using var context = new TaskPlusPlusContext();
             ReplyInfo replyInfo = new ReplyInfo()
             {
                 Sender = string.Empty,

@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using TaskPlusPlus.API.DbContexts;
 
 namespace TaskPlusPlus.API.Services
 {
@@ -11,6 +12,7 @@ namespace TaskPlusPlus.API.Services
     {
         public async Task<string> GetTasksAsync(string accessToken, Guid parentId)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var boardId = await GetBoardIdAsync(parentId);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
@@ -57,6 +59,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> AddTaskAsync(string accessToken, Guid parentId, string caption)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var board = await context.Boards.SingleAsync(b => b.Id == parentId);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
@@ -90,6 +93,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> AddSubTaskAsync(string accessToken, Guid parentId, string caption)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
 
@@ -121,6 +125,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> EditTaskAsync(string accessToken, Guid parentId, string caption, bool star)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
             var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
@@ -142,6 +147,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
             var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
@@ -163,6 +169,7 @@ namespace TaskPlusPlus.API.Services
 
         private async Task<bool> HaveAccessToTask(Guid userId, Guid parentId)
         {
+            using var context = new TaskPlusPlusContext();
             var pId = parentId;
             while (true)
             {
@@ -178,6 +185,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> CompeleteTaskAsync(string accessToken, Guid parentId)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
             var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && isOwner);
@@ -194,6 +202,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<JObject> DeleteTaskAsync(string accessToken, Guid parentId)
         {
+            using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
             var isOwner = await IsOwnerOfBoard(user.UserId, parentId);
             var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
@@ -210,31 +219,17 @@ namespace TaskPlusPlus.API.Services
         }
         //private async Task<JObject> HaveChild(Guid taskId) => new JObject { { "result", await context.Tasks.AnyAsync(t => t.ParentId == taskId && t.Deleted == false) } };
 
-        private int GetChildsCount(Guid parentId)
+        private static int GetChildsCount(Guid parentId)
         {
-            var tasks = from task in context.Tasks.Where(t => t.ParentId == parentId && !t.Deleted)
-                        select new
-                        {
-                            task.Id
-                        };
-
-
-
-            return tasks.Count();
+            using var context = new TaskPlusPlusContext();
+            return context.Tasks.Count(t => t.ParentId == parentId && !t.Deleted);
         }
 
 
-        private int GetCommentsCount(Guid parentId)
+        private static int GetCommentsCount(Guid parentId)
         {
-            var comments = from comment in context.Comments.Where(c => c.ParentId == parentId && c.Id == c.EditId && !c.Deleted)
-                           select new
-                           {
-                               comment.Id
-                           };
-
-
-
-            return comments.Count();
+            using var context = new TaskPlusPlusContext();
+            return context.Comments.Count(c => c.ParentId == parentId && c.Id == c.EditId && !c.Deleted);
         }
     }
 }
