@@ -17,7 +17,7 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await IsOwnerOfBoardَAsync(user.UserId, boardId))) return JsonMap.FalseResult;
 
             var role = new Roles()
             {
@@ -44,7 +44,7 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await IsOwnerOfBoardَAsync(user.UserId, boardId))) return JsonMap.FalseResult;
             if (!(await context.Roles.AnyAsync(r => r.Id == roleId && !r.Deleted))) return JsonMap.FalseResult;
 
             var role = await context.Roles.SingleAsync(r => r.Id == roleId && !r.Deleted);
@@ -66,7 +66,7 @@ namespace TaskPlusPlus.API.Services
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
 
-            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await IsOwnerOfBoardَAsync(user.UserId, boardId))) return JsonMap.FalseResult;
             if (!(await context.Roles.AnyAsync(r => r.Id == roleId && !r.Deleted))) return JsonMap.FalseResult;
             if (!(await context.Tags.AnyAsync(t => t.Id == tagId && !t.Deleted))) return JsonMap.FalseResult;
 
@@ -85,7 +85,7 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-        private List<RoleTag> GetRoleTags(Guid boardId, Guid roleId)
+        private static async Task<List<RoleTag>> GetRoleTags(Guid boardId, Guid roleId)
         {
             using var context = new TaskPlusPlusContext();
             var jsonData = new List<RoleTag>();
@@ -99,7 +99,7 @@ namespace TaskPlusPlus.API.Services
 
             foreach (var item in res)
             {
-                var tag = context.Tags.Single(t => t.Id == item.TagId);
+                var tag = await context.Tags.SingleAsync(t => t.Id == item.TagId);
 
                 jsonData.Add(new RoleTag()
                 {
@@ -118,7 +118,7 @@ namespace TaskPlusPlus.API.Services
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
 
-            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await IsOwnerOfBoardَAsync(user.UserId, boardId))) return JsonMap.FalseResult;
             if (!(await context.RolesTagList.AnyAsync(r => r.Id == roleTagId && !r.Removed))) return JsonMap.FalseResult;
 
             var roleTag = await context.RolesTagList.SingleAsync(r => r.Id == roleTagId && !r.Removed);
@@ -174,11 +174,10 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoard(user.UserId, boardId);
-            var selfPromote = await IsOwnerOfBoard(employeesId, boardId);
+            var isOwner = await IsOwnerOfBoardَAsync(user.UserId, boardId);
+            var selfPromote = await IsOwnerOfBoardَAsync(employeesId, boardId);
             var isShared = await context.SharedBoards.AnyAsync(s => s.BoardId == boardId && s.ShareTo == employeesId && !s.Deleted);
             var roleExist = await context.Roles.AnyAsync(r => r.Id == roleId && !r.Deleted);
-
 
 
             if (!isOwner || !isShared || !roleExist || selfPromote) return JsonMap.FalseResult;
@@ -202,13 +201,11 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-
-
         public async Task<JObject> RemoveRoleFromBoardAsync(string accessToken, Guid boardId, Guid roleId)
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await IsOwnerOfBoardَAsync(user.UserId, boardId))) return JsonMap.FalseResult;
             if (await context.RoleSessions.AnyAsync(r => r.RoleId == roleId && !r.Demoted)) return JsonMap.FalseResult;
 
             var role = await context.Roles.SingleOrDefaultAsync(r => r.Id == roleId);
@@ -222,7 +219,7 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await IsOwnerOfBoardَAsync(user.UserId, boardId))) return JsonMap.FalseResult;
 
             var roleSession = await context.RoleSessions.SingleOrDefaultAsync(r => r.Id == roleSessionId && !r.Demoted);
             if (roleSession == null) return JsonMap.FalseResult;
@@ -233,7 +230,7 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-        private async Task<List<EmployeeRoles>> GetEmployeesRolesAsync(Guid userId, Guid boardId)
+        private static async Task<List<EmployeeRoles>> GetEmployeesRolesAsync(Guid userId, Guid boardId)
         {
             using var context = new TaskPlusPlusContext();
             var jsonData = new List<EmployeeRoles>();
@@ -297,8 +294,7 @@ namespace TaskPlusPlus.API.Services
             return jsonData.ToString();
         }
 
-
-        private async Task<bool> HasRoleAccess(Guid boardId, Guid userId, Permissions permissionType)
+        private static async Task<bool> HasRoleAccess(Guid boardId, Guid userId, Permissions permissionType)
         {
             using var context = new TaskPlusPlusContext();
             var roles = from roleSession in context.RoleSessions.Where(r => !r.Demoted && r.BoardId == boardId && r.UserId == userId)
@@ -314,21 +310,24 @@ namespace TaskPlusPlus.API.Services
 
             if (!(await roles.AnyAsync())) return true;
 
-            foreach (var item in roles)
+            //todo: check
+            foreach (var role in roles)
             {
                 switch (permissionType)
                 {
                     case Permissions.ReadTask:
-                        if (item.TaskRead || item.TaskWrite) return true;
+                        if (role.TaskRead || role.TaskWrite) return true;
                         break;
                     case Permissions.WriteTask:
-                        if (item.TaskWrite) return true;
+                        if (role.TaskWrite) return true;
                         break;
                     case Permissions.ReadComment:
-                        if (item.CommentRead || item.CommentWrite) return true;
+                        if (role.CommentRead || role.CommentWrite) return true;
                         break;
                     case Permissions.WriteComment:
-                        if (item.CommentWrite) return true;
+                        if (role.CommentWrite) return true;
+                        break;
+                    case Permissions.CompeleteTask: //todo: check ???
                         break;
                 }
             }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TaskPlusPlus.API.Models;
 using TaskPlusPlus.API.Models.Task;
@@ -21,419 +20,263 @@ namespace TaskPlusPlus.API.Controllers
     [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "Access-Control-Allow-Origin")]
     public class TaskPlusPlus : ControllerBase
     {
-        private ITaskPlusPlusRepository _taskPlusPlusRepository;
+        private readonly ITaskPlusPlusRepository repository;
 
-        public TaskPlusPlus(ITaskPlusPlusRepository taskPlusPlusRepository)
-        {
-            _taskPlusPlusRepository = taskPlusPlusRepository;
-        }
-
+        public TaskPlusPlus(ITaskPlusPlusRepository repo) => repository = repo;
 
         [HttpGet]
-        public IActionResult Welcome()
-        {
-            return Ok("welcome to task++");
-        }
+        public IActionResult Welcome() => Ok("welcome to task++");
 
-        #region Test
+        #region Login
 
-        /*[HttpGet(("hey"))]
-        public IActionResult Hey()
-        {
-            return Ok("Hey!");
-        }
-
-        [HttpPost(("hey1"))]
-        public IActionResult Hey1()
-        {
-            return Ok("Hey1");
-        }
+        [HttpPost]
+        [Route(EventsKey.Signin)]
+        public async Task<IActionResult> SigninAsync([FromBody] SignIn signIn) =>
+            Ok(await repository.SigninAsync(signIn.PhoneNumber, signIn.OsVersion, signIn.DeviceType, signIn.BrowerVersion, signIn.Orientation));
         
-        [HttpPost(("hey2"))]
-        public async Task<IActionResult> Hey2()
-        {
-            return Ok("Hey2");
-        }*/
+        #endregion
+
+        #region Board
+
+        [HttpPost]
+        [Route(EventsKey.AddBoard)]
+        public async Task<IActionResult> AddBoardAsync([FromBody] AddBoard board) =>
+            Ok(await repository.AddBoardAsync(board.AccessToken, board.Caption));
+
+        [HttpPost]
+        [Route(EventsKey.EditBoard)]
+        public async Task<IActionResult> UpdateBoardAsync([FromBody] EditBoard newBoard) =>
+            Ok(await repository.UpdateBoardAsync(newBoard.AccessToken, newBoard.Id, newBoard.Caption));
+
+        [HttpPost]
+        [Route(EventsKey.DeleteBoard)]
+        public async Task<IActionResult> DeleteBoardAsync([FromBody] DeleteBoard board) =>
+            Ok(await repository.DeleteBoardAsync(board.AccessToken, board.Id));
+
+        [HttpPost]
+        [Route(EventsKey.GetBoards)]
+        public async Task<IActionResult> GetBoardsListAsync([FromBody] GetBoard accessToken) =>
+            Ok(await repository.GetBoardsAsync(accessToken.AccessToken));
+
+        [HttpPost]
+        [Route(EventsKey.ShareBoard)]
+        public async Task<IActionResult> ShareBoardAsync([FromBody] ShareBoard share) =>
+            Ok(await repository.ShareBoardAsync(share.AccessToken, share.BoardId, share.ShareToList));
+
+        [HttpPost]
+        [Route(EventsKey.RemoveShare)]
+        public async Task<IActionResult> RemoveBoardShareAsync([FromBody] RemoveEmployee employee) =>
+                    Ok(await repository.RemoveBoardShareAsync(employee.AccessToken, employee.BoardId, employee.ShareId));
+
+        #endregion
+        
+        #region Task
+
+        [HttpPost]
+        [Route(EventsKey.GetTasks)]
+        public async Task<IActionResult> GetTaskAsync([FromBody] GetTask task) =>
+            Ok(await repository.GetTasksAsync(task.AccessToken, task.ParentId));
+
+        [HttpPost]
+        [Route(EventsKey.AddTask)]
+        public async Task<IActionResult> AddTaskAsync([FromBody] AddTask task) =>
+            Ok(await repository.AddTaskAsync(task.AccessToken, task.ParentId, task.Caption));
+
+        [HttpPost]
+        [Route(EventsKey.EditTask)]
+        public async Task<IActionResult> EditTaskAsync([FromBody] EditTask task) =>
+            Ok(await repository.EditTaskAsync(task.AccessToken, task.Id, task.Caption, task.Star));
+
+        [HttpPost]
+        [Route(EventsKey.AddsubTask)]
+        public async Task<IActionResult> AddSubTaskAsync([FromBody] AddTask task) =>
+            Ok(await repository.AddSubTaskAsync(task.AccessToken, task.ParentId, task.Caption));
+
+        [HttpPost]
+        [Route(EventsKey.EditSubtask)]
+        public async Task<IActionResult> EditSubTaskAsync([FromBody] EditTask task) =>
+            Ok(await repository.EditSubTaskAsync(task.AccessToken, task.Id, task.Caption, task.Star));
+
+        [HttpPost]
+        [Route(EventsKey.CompeleteTask)]
+        public async Task<IActionResult> CompeletTaskAsync([FromBody] CompeleteTask task) =>
+            Ok(await repository.CompeleteTaskAsync(task.AccessToken, task.Id));
+
+        [HttpPost]
+        [Route(EventsKey.DeleteTask)]
+        public async Task<IActionResult> DeleteTaskAsync([FromBody] DeleteTask task) =>
+            Ok(await repository.DeleteTaskAsync(task.AccessToken, task.Id));
 
         #endregion
 
-        [HttpPost]
-        [Route("signin")]
-        public async Task<IActionResult> SigninAsync([FromBody] SignIn signIn)
-        {
-            var data = await _taskPlusPlusRepository.SigninAsync(signIn.PhoneNumber, signIn.OsVersion, signIn.DeviceType, signIn.BrowerVersion, signIn.Orientation);
-            return Ok(data.ToString());
-        }
+        #region Comment
 
         [HttpPost]
-        [Route("addboard")]
-        public async Task<IActionResult> AddBoardAsync([FromBody] AddBoard board)
-        {
-            var data = await _taskPlusPlusRepository.AddBoardAsync(board.AccessToken, board.Caption);
-            return Ok(data.ToString());
-        }
-
-        [HttpPost]
-        [Route("editboard")]
-        public async Task<IActionResult> UpdateBoardAsync([FromBody] EditBoard newBoard)
-        {
-            var data = await _taskPlusPlusRepository.UpdateBoardAsync(newBoard.AccessToken, newBoard.Id, newBoard.Caption);
-            return Ok(data.ToString());
-        }
-
-        [HttpPost]
-        [Route("deleteboard")]
-        public async Task<IActionResult> DeleteBoardAsync([FromBody] DeleteBoard board)
-        {
-            var data = await _taskPlusPlusRepository.DeleteBoardAsync(board.AccessToken, board.Id);
-            return Ok(data.ToString());
-        }
-        [HttpPost]
-        [Route("getboards")]
-        public async Task<IActionResult> GetBoardsListAsync([FromBody] GetBoard accessToken)
-        {
-            var data = await _taskPlusPlusRepository.GetBoardsAsync(accessToken.AccessToken);
-            return Ok(data);
-        }
-
-        [HttpPost]
-        [Route("gettasks")]
-        public async Task<IActionResult> GetTaskAsync([FromBody] GetTask task)
-        {
-            var data = await _taskPlusPlusRepository.GetTasksAsync(task.AccessToken, task.ParentId);
-            return Ok(data);
-        }
-
-        [HttpPost]
-        [Route("addtask")]
-        public async Task<IActionResult> AddTaskAsync([FromBody] AddTask task)
-        {
-            var data = await _taskPlusPlusRepository.AddTaskAsync(task.AccessToken, task.ParentId, task.Caption);
-            return Ok(data.ToString());
-        }
-
-        [HttpPost]
-        [Route("edittask")]
-        public async Task<IActionResult> EditTaskAsync([FromBody] EditTask task)
-        {
-            var data = await _taskPlusPlusRepository.EditTaskAsync(task.AccessToken, task.Id, task.Caption, task.Star);
-            return Ok(data.ToString());
-        }
-
-        [HttpPost]
-        [Route("addsubtask")]
-        public async Task<IActionResult> AddSubTaskAsync([FromBody] AddTask task)
-        {
-            var data = await _taskPlusPlusRepository.AddSubTaskAsync(task.AccessToken, task.ParentId, task.Caption);
-            return Ok(data.ToString());
-        }
-        [HttpPost]
-        [Route("editSubtask")]
-        public async Task<IActionResult> EditSubTaskAsync([FromBody] EditTask task)
-        {
-            var data = await _taskPlusPlusRepository.EditSubTaskAsync(task.AccessToken, task.Id, task.Caption, task.Star);
-            return Ok(data.ToString());
-        }
-
-        [HttpPost]
-        [Route("compeletetask")]
-        public async Task<IActionResult> CompeletTaskAsync([FromBody] CompeleteTask task)
-        {
-            var data = await _taskPlusPlusRepository.CompeleteTaskAsync(task.AccessToken, task.Id);
-            return Ok(data.ToString());
-        }
-
-        [HttpPost]
-        [Route("deletetask")]
-
-        public async Task<IActionResult> DeleteTaskAsync([FromBody] DeleteTask task)
-        {
-            var data = await _taskPlusPlusRepository.DeleteTaskAsync(task.AccessToken, task.Id);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.AddComment)]
+        public async Task<IActionResult> AddCommentAsync([FromBody] AddComment comment) =>
+            Ok(await repository.AddCommentAsync(comment.AccessToken, comment.Content, comment.ParentId, comment.ReplyTo));
 
 
         [HttpPost]
-        [Route("addcomment")]
-
-        public async Task<IActionResult> AddCommentAsync([FromBody] AddComment comment)
-        {
-            var data = await _taskPlusPlusRepository.AddCommentAsync(comment.AccessToken, comment.Content, comment.ParentId, comment.ReplyTo);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.GetComments)]
+        public async Task<IActionResult> GetCommentsAsync([FromBody] GetComment comment) =>
+            Ok(await repository.GetCommentsAsync(comment.AccessToken, comment.ParentId));
 
 
         [HttpPost]
-        [Route("getcomments")]
-
-        public async Task<IActionResult> GetCommentsAsync([FromBody] GetComment comment)
-        {
-            var data = await _taskPlusPlusRepository.GetCommentsAsync(comment.AccessToken, comment.ParentId);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.EditComment)]
+        public async Task<IActionResult> EditCommentAsync([FromBody] EditComment comment) =>
+            Ok(await repository.EditCommentAsync(comment.AccessToken, comment.ParentId, comment.Id, comment.Content));
 
 
         [HttpPost]
-        [Route("editcomment")]
+        [Route(EventsKey.DeleteComment)]
+        public async Task<IActionResult> DeleteCommentAsync([FromBody] DeleteComment comment) =>
+            Ok(await repository.DeleteCommentAsync(comment.AccessToken, comment.ParentId, comment.Id));
 
-        public async Task<IActionResult> EditCommentAsync([FromBody] EditComment comment)
-        {
-            var data = await _taskPlusPlusRepository.EditCommentAsync(comment.AccessToken, comment.ParentId, comment.Id, comment.Content);
-            return Ok(data.ToString());
-        }
+        #endregion
 
-
-        [HttpPost]
-        [Route("deletecomment")]
-
-        public async Task<IActionResult> DeleteCommentAsync([FromBody] DeleteComment comment)
-        {
-            var data = await _taskPlusPlusRepository.DeleteCommentAsync(comment.AccessToken, comment.ParentId, comment.Id);
-            return Ok(data.ToString());
-        }
-
+        #region Friend
 
         [HttpPost]
-        [Route("addfriend")]
-
-        public async Task<IActionResult> AddFriendAsync([FromBody] AddFriend friend)
-        {
-            var data = await _taskPlusPlusRepository.AddFriendAsync(friend.AccessToken, friend.PhoneNumber);
-            return Ok(data.ToString());
-        }
-
+        [Route(EventsKey.AddFriend)]
+        public async Task<IActionResult> AddFriendAsync([FromBody] AddFriend friend) =>
+            Ok(await repository.AddFriendAsync(friend.AccessToken, friend.PhoneNumber));
 
         [HttpPost]
-        [Route("getfriends")]
-
-        public async Task<IActionResult> GetFriendListAsync([FromBody] GetFriendList friend)
-        {
-            var data = await _taskPlusPlusRepository.GetFriendsListAsync(friend.AccessToken);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.GetFriends)]
+        public async Task<IActionResult> GetFriendListAsync([FromBody] GetFriendList friend) =>
+            Ok(await repository.GetFriendsListAsync(friend.AccessToken));
 
         [HttpPost]
-        [Route("getfriendrequests")]
-
-        public async Task<IActionResult> GetFriendsRequestQueueAsync([FromBody] GetFriendRequest friend)
-        {
-            var data = await _taskPlusPlusRepository.GetFriendRequestQueueAsync(friend.AccessToken);
-            return Ok(data.ToString());
-        }
-
+        [Route(EventsKey.GetFriendRequests)]
+        public async Task<IActionResult> GetFriendsRequestQueueAsync([FromBody] GetFriendRequest friend) =>
+            Ok(await repository.GetFriendRequestQueueAsync(friend.AccessToken));
 
         [HttpPost]
-        [Route("applyrequestresponce")]
-
-        public async Task<IActionResult> ApplyFriendRequestResponceAsync([FromBody] RequestResponce request)
-        {
-            var data = await _taskPlusPlusRepository.ApplyFriendRequestResponceAsync(request.AccessToken, request.Id, request.Responce);
-            return Ok(data.ToString());
-        }
-
+        [Route(EventsKey.ApplyRequestResponce)]
+        public async Task<IActionResult> ApplyFriendRequestResponceAsync([FromBody] RequestResponce request) =>
+            Ok(await repository.ApplyFriendRequestResponceAsync(request.AccessToken, request.Id, request.Responce));
 
         [HttpPost]
-        [Route("removefriend")]
+        [Route(EventsKey.RemoveFriend)]
+        public async Task<IActionResult> RemoveFriendAsync([FromBody] RemoveFriend request) =>
+            Ok(await repository.RemoveFriendAsync(request.AccessToken, request.Id));
 
-        public async Task<IActionResult> RemoveFriendAsync([FromBody] RemoveFriend request)
-        {
-            var data = await _taskPlusPlusRepository.RemoveFriendAsync(request.AccessToken, request.Id);
-            return Ok(data.ToString());
-        }
+        #endregion
 
-        [HttpPost]
-        [Route("shareboard")]
-
-        public async Task<IActionResult> ShareBoardAsync([FromBody] ShareBoard share)
-        {
-            var data = await _taskPlusPlusRepository.ShareBoardAsync(share.AccessToken, share.BoardId, share.ShareToList);
-            return Ok(data.ToString());
-        }
-
-
+        #region Tag
 
         [HttpPost]
-        [Route("addtag")]
-
-        public async Task<IActionResult> AddTagAsync([FromBody] AddTag tag)
-        {
-            var data = await _taskPlusPlusRepository.AddTagAsync(tag.AccessToken, tag.BoardId, tag.Caption);
-            return Ok(data.ToString());
-        }
-
+        [Route(EventsKey.AddTag)]
+        public async Task<IActionResult> AddTagAsync([FromBody] AddTag tag) =>
+            Ok(await repository.AddTagAsync(tag.AccessToken, tag.BoardId, tag.Caption));
 
         [HttpPost]
-        [Route("getboardstag")]
-
-        public async Task<IActionResult> GetTagListAsync([FromBody] GetTag tag)
-        {
-            var data = await _taskPlusPlusRepository.GetTagListAsync(tag.AccessToken, tag.BoardId);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.GetBoardsTag)]
+        public async Task<IActionResult> GetTagListAsync([FromBody] GetTag tag) =>
+            Ok(await repository.GetTagListAsync(tag.AccessToken, tag.BoardId));
 
         [HttpPost]
-        [Route("removetag")]
-
-        public async Task<IActionResult> RemoveTagAsync([FromBody] RemoveTag tag)
-        {
-            var data = await _taskPlusPlusRepository.RemoveTagAsync(tag.AccessToken, tag.BoardId, tag.Id);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.RemoveTag)]
+        public async Task<IActionResult> RemoveTagAsync([FromBody] RemoveTag tag) =>
+            Ok(await repository.RemoveTagAsync(tag.AccessToken, tag.BoardId, tag.Id));
 
         [HttpPost]
-        [Route("asigntag")]
-
-        public async Task<IActionResult> AsignTagToTaskAsync([FromBody] AsignTag tag)
-        {
-            var data = await _taskPlusPlusRepository.AsignTagToTaskAsync(tag.AccessToken, tag.TaskId, tag.Id);
-            return Ok(data.ToString());
-        }
-
+        [Route(EventsKey.AsignTag)]
+        public async Task<IActionResult> AsignTagToTaskAsync([FromBody] AsignTag tag) =>
+            Ok(await repository.AsignTagToTaskAsync(tag.AccessToken, tag.TaskId, tag.Id));
 
         [HttpPost]
-        [Route("removeassignment")]
-
-        public async Task<IActionResult> RemoveTagFromTaskAsync([FromBody] RemoveAssignment tag)
-        {
-            var data = await _taskPlusPlusRepository.RemoveTagFromTaskAsync(tag.AccessToken, tag.TaskId, tag.TaskTagId);
-            return Ok(data.ToString());
-        }
-
+        [Route(EventsKey.RemoveAssignment)]
+        public async Task<IActionResult> RemoveTagFromTaskAsync([FromBody] RemoveAssignment tag) =>
+            Ok(await repository.RemoveTagFromTaskAsync(tag.AccessToken, tag.TaskId, tag.TaskTagId));
 
         [HttpPost]
-        [Route("addrole")]
+        [Route(EventsKey.EditTag)]
+        public async Task<IActionResult> EditTagAsync([FromBody] EditTag tag) =>
+            Ok(await repository.EditTagAsync(tag.AccessToken, tag.BoardId, tag.Id, tag.Color));
 
-        public async Task<IActionResult> AddRoleAsync([FromBody] AddRole role)
-        {
-            var data = await _taskPlusPlusRepository.AddRoleAsync(role.AccessToken, role.BoardId, role.Caption, role.Color, role.ReadTask, role.WriteTask, role.CompleteTask, role.ReadComment, role.WriteComment);
-            return Ok(data.ToString());
-        }
+        #endregion
 
-        [HttpPost]
-        [Route("asigntagtorole")]
-
-        public async Task<IActionResult> AsignTagToRoleAsync([FromBody] AsignTagRole role)
-        {
-            var data = await _taskPlusPlusRepository.AsignTagToRoleAsync(role.AccessToken, role.BoardId, role.RoleId, role.TagId);
-            return Ok(data.ToString());
-        }
+        #region Role
 
         [HttpPost]
-        [Route("removetagfromrole")]
-
-        public async Task<IActionResult> RemoveTagFromRoleAsync([FromBody] RemoveTagRole role)
-        {
-            var data = await _taskPlusPlusRepository.RemoveTagFromRoleAsync(role.AccessToken, role.BoardId, role.RoleTagId);
-            return Ok(data.ToString());
-        }
-
+        [Route(EventsKey.AddRole)]
+        public async Task<IActionResult> AddRoleAsync([FromBody] AddRole role) =>
+            Ok(await repository.AddRoleAsync(role.AccessToken, role.BoardId, role.Caption, role.Color,
+                role.ReadTask, role.WriteTask, role.CompleteTask, role.ReadComment, role.WriteComment));
 
         [HttpPost]
-        [Route("editrole")]
-
-        public async Task<IActionResult> EditRoleAsync([FromBody] EditRole role)
-        {
-            var data = await _taskPlusPlusRepository.EditRoleAsync(role.AccessToken, role.Id, role.BoardId, role.Color, role.ReadTask, role.WriteTask, role.CompleteTask, role.ReadComment, role.WriteComment);
-            return Ok(data.ToString());
-        }
-
+        [Route(EventsKey.AsignTagtoRole)]
+        public async Task<IActionResult> AsignTagToRoleAsync([FromBody] AsignTagRole role) =>
+            Ok(await repository.AsignTagToRoleAsync(role.AccessToken, role.BoardId, role.RoleId, role.TagId));
 
         [HttpPost]
-        [Route("getboardroles")]
-
-        public async Task<IActionResult> GetBoardRolesAsync([FromBody] GetRole role)
-        {
-            var data = await _taskPlusPlusRepository.GetBoardRolesAsync(role.AccessToken, role.BoardId);
-            return Ok(data.ToString());
-        }
-
+        [Route(EventsKey.RemoveTagFromRole)]
+        public async Task<IActionResult> RemoveTagFromRoleAsync([FromBody] RemoveTagRole role) =>
+            Ok(await repository.RemoveTagFromRoleAsync(role.AccessToken, role.BoardId, role.RoleTagId));
 
         [HttpPost]
-        [Route("asignrole")]
-
-        public async Task<IActionResult> AsignRoleToEmployeesAsync([FromBody] AsignRole role)
-        {
-            var data = await _taskPlusPlusRepository.AsignRoleToEmployeesAsync(role.AccessToken, role.BoardId, role.RoleId, role.EmployeeId);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.EditRole)]
+        public async Task<IActionResult> EditRoleAsync([FromBody] EditRole role) =>
+            Ok(await repository.EditRoleAsync(role.AccessToken, role.Id, role.BoardId, role.Color, role.ReadTask,
+                role.WriteTask, role.CompleteTask, role.ReadComment, role.WriteComment));
 
         [HttpPost]
-        [Route("demote")]
-
-        public async Task<IActionResult> DemoteEmployeesAsync([FromBody] Demote role)
-        {
-            var data = await _taskPlusPlusRepository.DemoteEmployeesRoleAsync(role.AccessToken, role.BoardId, role.RoleSessionId);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.GetBoardRoles)]
+        public async Task<IActionResult> GetBoardRolesAsync([FromBody] GetRole role) =>
+            Ok(await repository.GetBoardRolesAsync(role.AccessToken, role.BoardId));
 
         [HttpPost]
-        [Route("removerole")]
-
-        public async Task<IActionResult> RemoveRoleFromBoardAsync([FromBody] RemoveRole role)
-        {
-            var data = await _taskPlusPlusRepository.RemoveRoleFromBoardAsync(role.AccessToken, role.BoardId, role.Id);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.AsignRole)]
+        public async Task<IActionResult> AsignRoleToEmployeesAsync([FromBody] AsignRole role) =>
+            Ok(await repository.AsignRoleToEmployeesAsync(role.AccessToken, role.BoardId, role.RoleId, role.EmployeeId));
 
         [HttpPost]
-        [Route("getemployees")]
-
-        public async Task<IActionResult> GetEmployeesAsync([FromBody] GetEmployee employee)
-        {
-            var data = await _taskPlusPlusRepository.GetEmployeesAsync(employee.AccessToken, employee.BoardId);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.Demote)]
+        public async Task<IActionResult> DemoteEmployeesAsync([FromBody] Demote role) =>
+            Ok(await repository.DemoteEmployeesRoleAsync(role.AccessToken, role.BoardId, role.RoleSessionId));
 
         [HttpPost]
-        [Route("edittag")]
-
-        public async Task<IActionResult> EditTagAsync([FromBody] EditTag tag)
-        {
-            var data = await _taskPlusPlusRepository.EditTagAsync(tag.AccessToken, tag.BoardId, tag.Id, tag.Color);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.RemoveRole)]
+        public async Task<IActionResult> RemoveRoleFromBoardAsync([FromBody] RemoveRole role) =>
+            Ok(await repository.RemoveRoleFromBoardAsync(role.AccessToken, role.BoardId, role.Id));
 
         [HttpPost]
-        [Route("removeshare")]
+        [Route(EventsKey.GetEmployees)]
+        public async Task<IActionResult> GetEmployeesAsync([FromBody] GetEmployee employee) =>
+            Ok(await repository.GetEmployeesAsync(employee.AccessToken, employee.BoardId));
 
-        public async Task<IActionResult> RemoveBoardShareAsync([FromBody] RemoveEmployee employee)
-        {
-            var data = await _taskPlusPlusRepository.RemoveBoardShareAsync(employee.AccessToken, employee.BoardId, employee.ShareId);
-            return Ok(data.ToString());
-        }
+        #endregion
 
-
-        [HttpPost]
-        [Route("changeprofile")]
-
-        public async Task<IActionResult> ChangeProfileAsync([FromBody] SetProfile profile)
-        {
-            var data = await _taskPlusPlusRepository.ChangeProfileAsync(profile.AccessToken, profile.FirstName, profile.LastName, profile.Bio, profile.Img, profile.Email, profile.PhoneNumber);
-            return Ok(data.ToString());
-        }
+        #region Profile
 
         [HttpPost]
-        [Route("getprofile")]
-        public async Task<IActionResult> GetProfileInfoAsync([FromBody] GetProfile profile)
-        {
-            var data = await _taskPlusPlusRepository.GetProfileInfoAsync(profile.AccessToken);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.ChangeProfile)]
+        public async Task<IActionResult> ChangeProfileAsync([FromBody] SetProfile profile) =>
+            Ok(await repository.ChangeProfileAsync(profile.AccessToken, profile.FirstName, profile.LastName, profile.Bio,
+                profile.Img, profile.Email, profile.PhoneNumber));
 
         [HttpPost]
-        [Route("getsystemmessages")]
-        public async Task<IActionResult> GetSystemMessagesAsync([FromBody] GetMessages message)
-        {
-            var data = await _taskPlusPlusRepository.GetSystemMessagesAsync(message.AccessToken);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.GetProfile)]
+        public async Task<IActionResult> GetProfileInfoAsync([FromBody] GetProfile profile) =>
+            Ok(await repository.GetProfileInfoAsync(profile.AccessToken));
+
+        #endregion
+
+        #region Notification
 
         [HttpPost]
-        [Route("getrecentchanges")]
-        public async Task<IActionResult> GetRecentChangesAsync([FromBody] GetRecentChanges changes)
-        {
-            var data = await _taskPlusPlusRepository.GetRecentChangesAsync(changes.AccessToken);
-            return Ok(data.ToString());
-        }
+        [Route(EventsKey.GetSystemMessages)]
+        public async Task<IActionResult> GetSystemMessagesAsync([FromBody] GetMessages message) =>
+            Ok(await repository.GetSystemMessagesAsync(message.AccessToken));
+
+        [HttpPost]
+        [Route(EventsKey.GetRecentChanges)]
+        public async Task<IActionResult> GetRecentChangesAsync([FromBody] GetRecentChanges changes) =>
+            Ok(await repository.GetRecentChangesAsync(changes.AccessToken));
+        
+        #endregion
     }
 }

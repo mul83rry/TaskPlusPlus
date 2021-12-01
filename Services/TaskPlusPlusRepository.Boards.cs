@@ -31,18 +31,19 @@ namespace TaskPlusPlus.API.Services
             var jsonData = new JArray();
             foreach (var item in res)
             {
-                var childs =  GetBoardsAllChilds(item.Id);
+                var childs = GetBoardsAllChilds(item.Id);
                 jsonData.Add(new JObject
                 {
                     {"Id", item.Id },
                     {"Creator",  (await GetUser(item.CreatorId)).FirstName },
                     {"Caption",  item.Caption },
                     {"CreationAt",  item.CreationAt },
-                    {"ChildsCount", childs.Count },
+                    {"ChildsCount", childs.Length },
                     {"CommentsCount", GetBoardsCommentsCount(childs)},
-                    {"EmployeesCount", GetEmployeesCount(item.Id) }
+                    {"EmployeesCount", await GetEmployeesCount(item.Id) }
                 });
             }
+
             return jsonData.ToString();
         }
 
@@ -79,7 +80,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken);
 
             // check accessibility
-            if (!await IsOwnerOfBoard(user.UserId, boardId))
+            if (!await IsOwnerOfBoardَAsync(user.UserId, boardId))
                 return JsonMap.FalseResult;
 
             var board = await context.Boards.SingleAsync(b => b.Id == boardId);
@@ -93,8 +94,6 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            // todo: check
-            // check accessibility
             if (!await context.Boards.AnyAsync(b => b.Id == boardId && b.CreatorId == user.UserId)) return JsonMap.FalseResult;
 
             var board = await context.Boards.SingleAsync(b => b.Id == boardId);
@@ -109,7 +108,6 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken);
             var board = await context.Boards.SingleAsync(b => b.Id == boardId && b.CreatorId == user.UserId);
 
-           
             foreach (var item in shareToList)
             {
                 var friend = await context.Profiles.SingleAsync(f => f.UserId == item);
@@ -118,8 +116,8 @@ namespace TaskPlusPlus.API.Services
 
                 // return false if there is not any active friend ship between them
                 if (!(await context.FriendLists.AnyAsync(f =>
-                (f.From == user.UserId && f.To == friend.UserId && !f.Removed && f.Accepted) ||
-                (f.To == user.UserId && f.From == friend.UserId && !f.Removed && f.Accepted))))
+                    (f.From == user.UserId && f.To == friend.UserId && !f.Removed && f.Accepted) ||
+                    (f.To == user.UserId && f.From == friend.UserId && !f.Removed && f.Accepted))))
                     return JsonMap.FalseResult;
 
                 var share = new SharedBoard()
@@ -140,43 +138,25 @@ namespace TaskPlusPlus.API.Services
         }
 
 
-        private async Task<bool> IsOwnerOfBoard(Guid userId, Guid parentId)
+        private static async Task<bool> IsOwnerOfBoardَAsync(Guid userId, Guid parentId)
         {
             using var context = new TaskPlusPlusContext();
-            var pId = parentId;
-            var tempTask = new Entities.Task();
+            parentId = await GetMainBoardId(parentId);
 
-            // serach for main board id
-            while (true)
-            {
-                tempTask = await context.Tasks.SingleOrDefaultAsync(t => t.Id == pId);
-
-                if (tempTask == null) break;
-                pId = tempTask.ParentId;
-            }
-
-            return await context.Boards.AnyAsync(b => b.Id == pId && b.CreatorId == userId);
+            return await context.Boards.AnyAsync(b => b.Id == parentId && b.CreatorId == userId);
         }
 
-        private async Task<Guid> GetBoardIdAsync(Guid parentId)
+        private static async Task<Guid> GetBoardIdAsync(Guid parentId)
         {
             using var context = new TaskPlusPlusContext();
             var boardId = parentId;
-            var tempTask = new Entities.Task();
-            while (true)
-            {
-                tempTask = await context.Tasks.SingleOrDefaultAsync(t => t.Id == boardId);
 
-                if (tempTask == null) break;
-                boardId = tempTask.ParentId;
-            }
+            parentId = await GetMainBoardId(parentId);
 
             return boardId;
         }
 
-
-
-        private List<Guid> GetBoardsAllChilds(Guid boardId)
+        private static Guid[] GetBoardsAllChilds(Guid boardId)
         {
             using var context = new TaskPlusPlusContext();
             var tasksList = new List<Guid>();
@@ -187,38 +167,27 @@ namespace TaskPlusPlus.API.Services
                             task.Id
                         };
 
-            
+            tasksList.AddRange(tasks.Select(data => data.Id));
 
-            foreach(var item in tasks)
-            {
-                tasksList.Add(item.Id);
-            }
-
-           
-            for(var i = 0; i < tasksList.Count; i++)
+            for (var i = 0; i < tasksList.Count; i++)
             {
                 var subTasks = from subTask in context.Tasks.Where(t => t.ParentId == tasksList[i] && !t.Deleted)
-                             select new
-                             {
-                                 subTask.Id,
-                             };
+                               select new
+                               {
+                                   subTask.Id,
+                               };
 
-                foreach(var data in subTasks)
-                {
-                    tasksList.Add(data.Id);
-                }
+                tasksList.AddRange(subTasks.Select(data => data.Id));
             }
 
-
-            return tasksList;
+            return tasksList.ToArray();
         }
 
-
-        private int GetBoardsCommentsCount(List<Guid> childs)
+        private static int GetBoardsCommentsCount(Guid[] childs)
         {
             using var context = new TaskPlusPlusContext();
             var commentsList = new List<Guid>();
-            foreach(var item in childs)
+            foreach (var item in childs)
             {
                 var comments = from comment in context.Comments.Where(c => c.ParentId == item && c.Id == c.EditId && !c.Deleted)
                                select new
@@ -226,36 +195,24 @@ namespace TaskPlusPlus.API.Services
                                    comment.Id
                                };
 
-                foreach (var data in comments)
-                {
-                    commentsList.Add(data.Id);
-                }
+                commentsList.AddRange(comments.Select(c => c.Id));
             }
-
 
             return commentsList.Count;
         }
 
-
-        private int GetEmployeesCount(Guid boardId)
+        private static async Task<int> GetEmployeesCount(Guid boardId)
         {
             using var context = new TaskPlusPlusContext();
-            var shares = from shareBoard in context.SharedBoards.Where(s => !s.Deleted && s.BoardId == boardId && !s.Deleted)
-                         select new
-                         {
-                             shareBoard.Id
-                         };
-
-            return shares.Count();
+            return await context.SharedBoards.CountAsync(s => !s.Deleted && s.BoardId == boardId && !s.Deleted);
         }
-
 
         public async Task<JObject> RemoveBoardShareAsync(string accessToken, Guid boardId, Guid shareId)
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
 
-            if (!(await IsOwnerOfBoard(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await IsOwnerOfBoardَAsync(user.UserId, boardId))) return JsonMap.FalseResult;
 
             var share = await context.SharedBoards.SingleOrDefaultAsync(s => s.Id == shareId && s.ShareTo != user.UserId);
 

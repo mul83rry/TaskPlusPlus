@@ -6,21 +6,12 @@ namespace TaskPlusPlus.API.DbContexts
 {
     public class TaskPlusPlusContext : DbContext
     {
-        /*public TaskPlusPlusContext(DbContextOptions<TaskPlusPlusContext> options)
-           : base(options)
-        {
-        }*/
-        public TaskPlusPlusContext()
-           : base()
-        {
-        }
+        public TaskPlusPlusContext() : base() { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer(@"Server=.;Database=TaskPlusPlusDB;User Id=taskppir;Password=@yrS5j01JtVrmoob;");
-            }
+            if (optionsBuilder.IsConfigured) return;
+            optionsBuilder.UseSqlServer(@"Server=.;Database=TaskPlusPlusDB;User Id=taskppir;Password=@yrS5j01JtVrmoob;");
         }
 
 
@@ -64,17 +55,6 @@ namespace TaskPlusPlus.API.DbContexts
             modelBuilder.Entity<Task>().Property(p => p.Star).HasDefaultValue(false);
             modelBuilder.Entity<Task>().Property(p => p.CreationAt).HasDefaultValue(DateTime.Now);
             modelBuilder.Entity<FriendList>().Property(p => p.Accepted).HasDefaultValue(false);
-
-            // seed the database with dummy data
-            /*modelBuilder.Entity<User>().HasData(
-                new User()
-                {
-                    Id = Guid.Parse("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
-                    FirstName = "Hossein",
-                    LastName = "",
-                    SignupDate = new DateTime(2021, 7, 23),
-                    PhoneNumber = "09399674687"
-                });*/
 
             base.OnModelCreating(modelBuilder);
         }

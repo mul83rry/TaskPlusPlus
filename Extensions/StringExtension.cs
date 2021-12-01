@@ -12,7 +12,7 @@ namespace TaskPlusPlus.API.Extensions
             {
                 return Regex.Match(number, regex).Success && number.Length == 11;
             }
-            catch (RegexMatchTimeoutException)
+            catch
             {
                 return false;
             }

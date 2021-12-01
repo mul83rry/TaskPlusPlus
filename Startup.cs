@@ -53,9 +53,7 @@ namespace TaskPlusPlus.API
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-
             app.UseCors("AllowSpecificOrigin");
-
 
             if (env.IsDevelopment())
             {
@@ -64,15 +62,6 @@ namespace TaskPlusPlus.API
 
             app.UseHttpsRedirection();
 
-            /*app.UseStaticFiles(new StaticFileOptions
-            {
-                OnPrepareResponse = ctx =>
-                {
-                    // using Microsoft.AspNetCore.Http;
-                    ctx.Context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-                }
-            });
-            */
             app.UseRouting();
 
 

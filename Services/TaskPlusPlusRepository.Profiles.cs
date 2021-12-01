@@ -1,8 +1,6 @@
-﻿using TaskPlusPlus.API.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using TaskPlusPlus.API.DbContexts;
 
@@ -17,7 +15,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken);
             var profile = await context.Profiles.SingleAsync(p => p.UserId == user.UserId);
 
-            if (firstName == string.Empty) firstName = "user";
+            if (string.IsNullOrEmpty(firstName)) firstName = "user"; // todo: check
 
             profile.FirstName = firstName;
             profile.LastName = lastName;
@@ -25,7 +23,6 @@ namespace TaskPlusPlus.API.Services
             profile.Image = img;
 
             var mail = await context.Login.SingleAsync(l => l.Id == user.UserId);
-
             mail.Email = email;
 
             await context.SaveChangesAsync();
