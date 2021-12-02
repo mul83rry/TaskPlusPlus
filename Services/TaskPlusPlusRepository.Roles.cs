@@ -85,7 +85,7 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-        private static async Task<List<RoleTag>> GetRoleTags(Guid roleId)
+        private static async Task<List<RoleTag>> GetRoleTags(Guid boardId,Guid roleId)
         {
             using var context = new TaskPlusPlusContext();
             var jsonData = new List<RoleTag>();
@@ -99,7 +99,7 @@ namespace TaskPlusPlus.API.Services
 
             foreach (var item in res)
             {
-                var tag = await context.Tags.SingleAsync(t => t.Id == item.TagId && !t.Deleted);
+                var tag = await context.Tags.SingleAsync(t => t.Id == item.TagId && t.BoardId == boardId && !t.Deleted);
 
                 if (tag == null) continue;
 
@@ -165,7 +165,7 @@ namespace TaskPlusPlus.API.Services
                     {"WriteComment",item.CommentWrite},
                     {"CompleteTask", item.TaskCompelete },
                     {"Color", item.BackgroundColor},
-                    {"Tags", JToken.FromObject(await GetRoleTags(item.Id))}
+                    {"Tags", JToken.FromObject(await GetRoleTags(boardId,item.Id))}
                 });
             }
 

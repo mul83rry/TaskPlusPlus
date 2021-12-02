@@ -278,9 +278,9 @@ namespace TaskPlusPlus.API.Controllers
             Ok((await repository.GetRecentChangesAsync(changes.AccessToken)).ToString());
 
         // todo: temp
-        [HttpPost]
+        [HttpGet]
         [Route("GenerateDatabase")]
-        public async Task<IActionResult> GenerateDatabase([FromBody] GetRecentChanges changes) =>
+        public async Task<IActionResult> GenerateDatabase() =>
             Ok((await repository.GenerateDBAsync()).ToString());
 
         #endregion
