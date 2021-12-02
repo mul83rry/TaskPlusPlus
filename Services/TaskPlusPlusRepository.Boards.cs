@@ -80,7 +80,7 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken);
 
             // check accessibility
-            if (!await IsOwnerOfBoardَAsync(user.UserId, boardId))
+            if (!await IsOwnerOfBoardAsync(user.UserId, boardId))
                 return JsonMap.FalseResult;
 
             var board = await context.Boards.SingleAsync(b => b.Id == boardId);
@@ -138,7 +138,7 @@ namespace TaskPlusPlus.API.Services
         }
 
 
-        private static async Task<bool> IsOwnerOfBoardَAsync(Guid userId, Guid parentId)
+        private static async Task<bool> IsOwnerOfBoardAsync(Guid userId, Guid parentId)
         {
             using var context = new TaskPlusPlusContext();
             parentId = await GetMainBoardId(parentId);
@@ -212,7 +212,7 @@ namespace TaskPlusPlus.API.Services
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
 
-            if (!(await IsOwnerOfBoardَAsync(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await IsOwnerOfBoardAsync(user.UserId, boardId))) return JsonMap.FalseResult;
 
             var share = await context.SharedBoards.SingleOrDefaultAsync(s => s.Id == shareId && s.ShareTo != user.UserId);
 

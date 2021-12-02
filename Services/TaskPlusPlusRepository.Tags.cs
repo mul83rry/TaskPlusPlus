@@ -70,7 +70,7 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            if (!await IsOwnerOfBoardَAsync(user.UserId, taskId)) return JsonMap.FalseResult;
+            if (!await IsOwnerOfBoardAsync(user.UserId, taskId)) return JsonMap.FalseResult;
             if (!await context.Tags.AnyAsync(t => t.Id == tagId && !t.Deleted)) return JsonMap.FalseResult;
             if (!await context.Tasks.AnyAsync(t => t.Id == taskId && !t.Deleted)) return JsonMap.FalseResult;
             if (await context.TagsList.AnyAsync(t => !t.Deleted && t.TagId == tagId && t.TaskId == taskId)) return JsonMap.FalseResult;
@@ -121,7 +121,7 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardَAsync(user.UserId, boardId);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, boardId);
             var isUsing = await TagIsUsing(tagId);
 
             if (!isOwner || isUsing) return JsonMap.FalseResult; //todo: check
@@ -137,7 +137,7 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardَAsync(user.UserId, boardId);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, boardId);
 
             if (!isOwner) return JsonMap.FalseResult;
 
@@ -153,7 +153,7 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            if (!(await IsOwnerOfBoardَAsync(user.UserId, taskId))) return JsonMap.FalseResult;
+            if (!(await IsOwnerOfBoardAsync(user.UserId, taskId))) return JsonMap.FalseResult;
 
             var taskTag = await context.TagsList.SingleOrDefaultAsync(t => t.Id == taskTagId && !t.Deleted);
             if (taskTag == null) return JsonMap.FalseResult;

@@ -15,7 +15,7 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardَAsync(user.UserId, parentId);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
             if (await HaveAccessToTaskَAsync(user.UserId, parentId) == false) return JsonMap.FalseResult;
             if (!isOwner && !(await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteComment))) return JsonMap.FalseResult;
 
@@ -49,7 +49,7 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardَAsync(user.UserId, parentId);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
             if (await HaveAccessToTaskَAsync(user.UserId, parentId) == false) return JsonMap.FalseResult.ToString();
             if (!isOwner && !await HasPermissionsAsync(user.UserId, parentId, Permissions.ReadComment)) return JsonMap.FalseResult.ToString();
 
@@ -87,7 +87,7 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardَAsync(user.UserId, parentId);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
             if (await HaveAccessToTaskَAsync(user.UserId, parentId) == false) return JsonMap.FalseResult;
 
             //find comment => create new comment => change edit id value to new comment id => save data base
@@ -125,7 +125,7 @@ namespace TaskPlusPlus.API.Services
         {
             using var context = new TaskPlusPlusContext();
             var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardَAsync(user.UserId, parentId);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
             if (await HaveAccessToTaskَAsync(user.UserId, parentId) == false) return JsonMap.FalseResult;
 
             var comment = await context.Comments.SingleOrDefaultAsync(c => c.Id == commentId && (c.Sender == user.UserId || isOwner));
