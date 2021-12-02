@@ -21,7 +21,8 @@ namespace TaskPlusPlus.API
             {
                 try
                 {
-                    /*var context = scope.ServiceProvider.GetService<TaskPlusPlusContext>();
+                    /*
+                    var context = scope.ServiceProvider.GetService<TaskPlusPlusContext>();
                     // for demo purposes, delete the database & migrate on startup so 
                     // we can start with a clean slate
                     context.Database.EnsureDeleted();
