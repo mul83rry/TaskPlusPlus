@@ -222,16 +222,16 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
         
-        private static Task<int> GetChildsCount(Guid parentId)
+        private async static Task<int> GetChildsCount(Guid parentId)
         {
             using var context = new TaskPlusPlusContext();
-            return context.Tasks.CountAsync(t => t.ParentId == parentId && !t.Deleted);
+            return await context.Tasks.CountAsync(t => t.ParentId == parentId && !t.Deleted);
         }
 
-        private static Task<int> GetCommentsCount(Guid parentId)
+        private async static Task<int> GetCommentsCount(Guid parentId)
         {
             using var context = new TaskPlusPlusContext();
-            return context.Comments.CountAsync(c => c.ParentId == parentId && c.Id == c.EditId && !c.Deleted);
+            return await context.Comments.CountAsync(c => c.ParentId == parentId && c.Id == c.EditId && !c.Deleted);
         }
     }
 }
