@@ -101,6 +101,8 @@ namespace TaskPlusPlus.API.Services
             {
                 var tag = await context.Tags.SingleAsync(t => t.Id == item.TagId && !t.Deleted);
 
+                if (tag == null) continue;
+
                 jsonData.Add(new RoleTag()
                 {
                     RoleTagId = item.Id,
