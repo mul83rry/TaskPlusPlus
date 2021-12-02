@@ -261,8 +261,9 @@ namespace TaskPlusPlus.API.Services
             return JsonData.ToString();
         }
 
-        /*public async Task<string> GenerateDBAsync()
+        public async Task<string> GenerateDBAsync()
         {
+            using var context = new TaskPlusPlusContext();
             try
             {
                 await context.Database.EnsureCreatedAsync();
@@ -272,7 +273,7 @@ namespace TaskPlusPlus.API.Services
             {
                 return e.Message;
             }
-        }*/
+        }
     }
 
 
