@@ -14,7 +14,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<string> GetBoardsAsync(string accessToken)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
 
             var res = from board in context.Boards.Where(b => !b.Deleted).OrderBy(b => b.CreationAt)
                       join sharedBoard in context.SharedBoards
@@ -31,16 +31,16 @@ namespace TaskPlusPlus.API.Services
             var jsonData = new JArray();
             foreach (var item in res)
             {
-                var childs = GetBoardsAllChilds(item.Id);
+                var childs = GetBoardsAllChilds(item.Id, context);
                 jsonData.Add(new JObject
                 {
                     {"Id", item.Id },
-                    {"Creator",  (await GetUser(item.CreatorId)).FirstName },
+                    {"Creator",  (await GetUser(item.CreatorId, context)).FirstName },
                     {"Caption",  item.Caption },
                     {"CreationAt",  item.CreationAt },
                     {"ChildsCount", childs.Length },
-                    {"CommentsCount", GetBoardsCommentsCount(childs)},
-                    {"EmployeesCount", await GetEmployeesCount(item.Id) }
+                    {"CommentsCount", GetBoardsCommentsCount(childs, context)},
+                    {"EmployeesCount", await GetEmployeesCount(item.Id, context) }
                 });
             }
 
@@ -50,7 +50,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> AddBoardAsync(string accessToken, string caption)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
 
             var board = new Board()
             {
@@ -77,10 +77,10 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> UpdateBoardAsync(string accessToken, Guid boardId, string caption)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
 
             // check accessibility
-            if (!await IsOwnerOfBoardAsync(user.UserId, boardId))
+            if (!await IsOwnerOfBoardAsync(user.UserId, boardId, context))
                 return JsonMap.FalseResult;
 
             var board = await context.Boards.SingleAsync(b => b.Id == boardId);
@@ -93,7 +93,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> DeleteBoardAsync(string accessToken, Guid boardId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
             if (!await context.Boards.AnyAsync(b => b.Id == boardId && b.CreatorId == user.UserId)) return JsonMap.FalseResult;
 
             var board = await context.Boards.SingleAsync(b => b.Id == boardId);
@@ -105,7 +105,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> ShareBoardAsync(string accessToken, Guid boardId, Guid[] shareToList)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
             var board = await context.Boards.SingleAsync(b => b.Id == boardId && b.CreatorId == user.UserId);
 
             foreach (var item in shareToList)
@@ -138,17 +138,15 @@ namespace TaskPlusPlus.API.Services
         }
 
 
-        private static async Task<bool> IsOwnerOfBoardAsync(Guid userId, Guid parentId)
+        private static async Task<bool> IsOwnerOfBoardAsync(Guid userId, Guid parentId, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             parentId = await GetMainBoardId(parentId);
 
             return await context.Boards.AnyAsync(b => b.Id == parentId && b.CreatorId == userId);
         }
 
-        private static async Task<Guid> GetBoardIdAsync(Guid parentId)
+        private static async Task<Guid> GetBoardIdAsync(Guid parentId, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             var boardId = parentId;
 
             parentId = await GetMainBoardId(parentId);
@@ -156,9 +154,8 @@ namespace TaskPlusPlus.API.Services
             return boardId;
         }
 
-        private static Guid[] GetBoardsAllChilds(Guid boardId)
+        private static Guid[] GetBoardsAllChilds(Guid boardId, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             var tasksList = new List<Guid>();
 
             var tasks = from task in context.Tasks.Where(t => t.ParentId == boardId && !t.Deleted)
@@ -183,9 +180,8 @@ namespace TaskPlusPlus.API.Services
             return tasksList.ToArray();
         }
 
-        private static int GetBoardsCommentsCount(Guid[] childs)
+        private static int GetBoardsCommentsCount(Guid[] childs, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             var commentsList = new List<Guid>();
             foreach (var item in childs)
             {
@@ -201,18 +197,17 @@ namespace TaskPlusPlus.API.Services
             return commentsList.Count;
         }
 
-        private static async Task<int> GetEmployeesCount(Guid boardId)
+        private static async Task<int> GetEmployeesCount(Guid boardId, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             return await context.SharedBoards.CountAsync(s => !s.Deleted && s.BoardId == boardId && !s.Deleted);
         }
 
         public async Task<JObject> RemoveBoardShareAsync(string accessToken, Guid boardId, Guid shareId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
 
-            if (!(await IsOwnerOfBoardAsync(user.UserId, boardId))) return JsonMap.FalseResult;
+            if (!(await IsOwnerOfBoardAsync(user.UserId, boardId, context))) return JsonMap.FalseResult;
 
             var share = await context.SharedBoards.SingleOrDefaultAsync(s => s.Id == shareId && s.ShareTo != user.UserId);
 

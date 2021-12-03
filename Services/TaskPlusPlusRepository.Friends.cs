@@ -13,7 +13,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> AddFriendAsync(string accessToken, string phoneNumber)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
             var friendUser = await context.Profiles.SingleOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
             if (friendUser == null) return JsonMap.FalseResult;
             if (friendUser.UserId == user.UserId) return JsonMap.FalseResult;
@@ -45,7 +45,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<string> GetFriendsListAsync(string accessToken)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
 
             var res = from friendsList in context.FriendLists.Where(f => (user.UserId == f.From || user.UserId == f.To) && f.Accepted && !f.Removed).OrderBy(f => f.RequestDate)
                       select new
@@ -61,8 +61,8 @@ namespace TaskPlusPlus.API.Services
             {
                 Profile userDetail = null;
 
-                if (item.From == user.UserId) userDetail = await GetUser(item.To);
-                else if (item.To == user.UserId) userDetail = await GetUser(item.From);
+                if (item.From == user.UserId) userDetail = await GetUser(item.To, context);
+                else if (item.To == user.UserId) userDetail = await GetUser(item.From, context);
 
                 jsonData.Add(new JObject
                     {
@@ -81,7 +81,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<string> GetFriendRequestQueueAsync(string accessToken)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
             var res = from FList in context.FriendLists.Where(f => user.UserId == f.To && f.Pending).OrderBy(f => f.RequestDate)
                       select new
                       {
@@ -93,7 +93,7 @@ namespace TaskPlusPlus.API.Services
 
             foreach (var item in res)
             {
-                var userDetail = await GetUser(item.From);
+                var userDetail = await GetUser(item.From, context);
                 jsonData.Add(new JObject
                     {
                         {"Id", item.Id},
@@ -109,7 +109,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> ApplyFriendRequestResponceAsync(string accessToken, Guid requestId, bool reply)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
             var request = await context.FriendLists.SingleOrDefaultAsync(f => f.Id == requestId);
             if (user.UserId != request.To) return JsonMap.FalseResult;
             if (!request.Pending) return JsonMap.FalseResult;
@@ -126,7 +126,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> RemoveFriendAsync(string accessToken, Guid requestId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
             var request = await context.FriendLists.SingleAsync(f => f.Id == requestId);
             if (request.From != user.UserId && request.To != user.UserId) return JsonMap.FalseResult;
 

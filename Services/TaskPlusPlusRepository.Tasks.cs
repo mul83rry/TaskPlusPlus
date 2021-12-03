@@ -12,14 +12,14 @@ namespace TaskPlusPlus.API.Services
         public async Task<string> GetTasksAsync(string accessToken, Guid parentId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            var boardId = await GetBoardIdAsync(parentId);
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
+            var user = await GetUserSessionAsync(accessToken, context);
+            var boardId = await GetBoardIdAsync(parentId, context);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId, context);
 
             var jsonData = new JArray();
             // todo: switch to signalR
-            if (!(await HaveAccessToTaskَAsync(user.UserId, boardId))) return jsonData.ToString();
-            if (!isOwner && !(await HasRoleAccess(boardId, user.UserId, Permissions.ReadTask))) return jsonData.ToString();
+            if (!(await HaveAccessToTaskَAsync(user.UserId, boardId, context))) return jsonData.ToString();
+            if (!isOwner && !(await HasRoleAccess(boardId, user.UserId, Permissions.ReadTask, context))) return jsonData.ToString();
 
             var res = from task in context.Tasks
                       .Where(t => t.ParentId == parentId && !t.Deleted).OrderBy(t => t.CreationAt)
@@ -36,7 +36,7 @@ namespace TaskPlusPlus.API.Services
             // todo: can be simplest
             foreach (var item in res)
             {
-                if (!isOwner && !(await HasTagAccess(boardId, user.UserId, item.Id)))
+                if (!isOwner && !(await HasTagAccess(boardId, user.UserId, item.Id, context)))
                     continue;
 
                 jsonData.Add(new JObject
@@ -45,11 +45,11 @@ namespace TaskPlusPlus.API.Services
                         {"Caption",  item.Caption },
                         {"Star",  item.Star },
                         {"CreationAt",  item.CreationAt },
-                        {"LastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName.ToString()},
-                        {"Tags", JToken.FromObject(await GetTaskTagListAsync(item.Id))},
+                        {"LastModifiedBy", (await GetUser(item.LastModifiedBy, context)).FirstName.ToString()},
+                        {"Tags", JToken.FromObject(await GetTaskTagListAsync(item.Id, context))},
                         {"Compeleted" , item.Compeleted},
-                        {"SubTasksCount" , await GetChildsCount(item.Id)},
-                        {"SubCommentsCount" , await GetCommentsCount(item.Id)},
+                        {"SubTasksCount" , await GetChildsCount(item.Id, context)},
+                        {"SubCommentsCount" , await GetCommentsCount(item.Id, context)},
                     });
             }
             return jsonData.ToString();
@@ -58,13 +58,13 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> AddTaskAsync(string accessToken, Guid parentId, string caption)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            if (!await HaveAccessToTaskَAsync(user.UserId, parentId)) return JsonMap.FalseResult;
+            var user = await GetUserSessionAsync(accessToken, context);
+            if (!await HaveAccessToTaskَAsync(user.UserId, parentId, context)) return JsonMap.FalseResult;
 
             var board = await context.Boards.SingleAsync(b => b.Id == parentId);
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId, context);
 
-            if (!isOwner && !(await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteTask))) return JsonMap.FalseResult;
+            if (!isOwner && !(await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteTask, context))) return JsonMap.FalseResult;
 
             var task = new Entities.Task()
             {
@@ -90,11 +90,11 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> AddSubTaskAsync(string accessToken, Guid parentId, string caption)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            if (!await HaveAccessToTaskَAsync(user.UserId, parentId)) return JsonMap.FalseResult;
+            var user = await GetUserSessionAsync(accessToken, context);
+            if (!await HaveAccessToTaskَAsync(user.UserId, parentId, context)) return JsonMap.FalseResult;
 
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
-            if (!isOwner && !(await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteTask))) return JsonMap.FalseResult;
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId, context);
+            if (!isOwner && !(await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteTask, context))) return JsonMap.FalseResult;
 
             var task = await context.Tasks.SingleAsync(t => t.Id == parentId);
 
@@ -121,11 +121,11 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> EditTaskAsync(string accessToken, Guid parentId, string caption, bool star)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            if (!await HaveAccessToTaskَAsync(user.UserId, parentId)) return JsonMap.FalseResult;
+            var user = await GetUserSessionAsync(accessToken, context);
+            if (!await HaveAccessToTaskَAsync(user.UserId, parentId, context)) return JsonMap.FalseResult;
 
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
-            if (!isOwner && !await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteTask)) return JsonMap.FalseResult;
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId, context);
+            if (!isOwner && !await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteTask, context)) return JsonMap.FalseResult;
 
             var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
             if (task == null) return JsonMap.FalseResult;
@@ -142,11 +142,11 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> EditSubTaskAsync(string accessToken, Guid parentId, string caption, bool star)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            if (!await HaveAccessToTaskَAsync(user.UserId, parentId)) return JsonMap.FalseResult;
+            var user = await GetUserSessionAsync(accessToken, context);
+            if (!await HaveAccessToTaskَAsync(user.UserId, parentId, context)) return JsonMap.FalseResult;
 
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
-            if (!isOwner && !await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteTask)) return JsonMap.FalseResult;
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId, context);
+            if (!isOwner && !await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteTask, context)) return JsonMap.FalseResult;
 
             var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
             if (task == null) return JsonMap.FalseResult;
@@ -160,9 +160,8 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-        private static async Task<bool> HaveAccessToTaskَAsync(Guid userId, Guid parentId)
+        private static async Task<bool> HaveAccessToTaskَAsync(Guid userId, Guid parentId, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             parentId = await GetMainBoardId(parentId);
 
             var board = await context.Boards.SingleAsync(b => b.Id == parentId);
@@ -187,12 +186,12 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> CompeleteTaskAsync(string accessToken, Guid parentId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            if (!await HaveAccessToTaskَAsync(user.UserId, parentId)) return JsonMap.FalseResult;
-            if (!await HasRoleAccess(parentId, user.UserId, Permissions.CompeleteTask)) return JsonMap.FalseResult; //todo: check // added by mul83rry
+            var user = await GetUserSessionAsync(accessToken, context);
+            if (!await HaveAccessToTaskَAsync(user.UserId, parentId, context)) return JsonMap.FalseResult;
+            if (!await HasRoleAccess(parentId, user.UserId, Permissions.CompeleteTask, context)) return JsonMap.FalseResult; //todo: check // added by mul83rry
 
 
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId, context);
             var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && isOwner);
             if (task == null) return JsonMap.FalseResult;
 
@@ -206,14 +205,14 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> DeleteTaskAsync(string accessToken, Guid parentId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            if (!await HaveAccessToTaskَAsync(user.UserId, parentId)) return JsonMap.FalseResult;
+            var user = await GetUserSessionAsync(accessToken, context);
+            if (!await HaveAccessToTaskَAsync(user.UserId, parentId, context)) return JsonMap.FalseResult;
 
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId, context);
             var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && (t.Creator == user.UserId || isOwner));
 
             if (task == null) return JsonMap.FalseResult;
-            if (!isOwner && !await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteTask)) return JsonMap.FalseResult;
+            if (!isOwner && !await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteTask, context)) return JsonMap.FalseResult;
 
             task.Deleted = true;
             task.LastModifiedBy = user.UserId;
@@ -221,16 +220,14 @@ namespace TaskPlusPlus.API.Services
 
             return JsonMap.TrueResult;
         }
-        
-        private async static Task<int> GetChildsCount(Guid parentId)
+
+        private async static Task<int> GetChildsCount(Guid parentId, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             return await context.Tasks.CountAsync(t => t.ParentId == parentId && !t.Deleted);
         }
 
-        private async static Task<int> GetCommentsCount(Guid parentId)
+        private async static Task<int> GetCommentsCount(Guid parentId, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             return await context.Comments.CountAsync(c => c.ParentId == parentId && c.Id == c.EditId && !c.Deleted);
         }
     }

@@ -10,9 +10,8 @@ namespace TaskPlusPlus.API.Services
 {
     public partial class TaskPlusPlusRepository
     {
-        private static async Task<Session> GetUserSessionAsync(string accessToken)
+        private static async Task<Session> GetUserSessionAsync(string accessToken, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             return string.IsNullOrEmpty(accessToken)
                 ? throw new ArgumentNullException("not valid argument")
                 : await context.Sessions.SingleAsync(s => s.AccessToken == accessToken);
@@ -94,9 +93,8 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.GetSuccesfullAccessToken(newSession.AccessToken);
         }
 
-        private static async Task<Profile> GetUser(Guid userId)
+        private static async Task<Profile> GetUser(Guid userId, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             return await context.Profiles.SingleOrDefaultAsync(u => u.UserId == userId);
         }
     }

@@ -15,7 +15,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> AddTagAsync(string accessToken, Guid boardId, string caption)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
             var board = await context.Boards.SingleOrDefaultAsync(b => b.Id == boardId && b.CreatorId == user.UserId);
             if (board == null) return JsonMap.FalseResult;
 
@@ -38,8 +38,8 @@ namespace TaskPlusPlus.API.Services
         public async Task<string> GetTagListAsync(string accessToken, Guid parentId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            var boardId = await GetBoardIdAsync(parentId);
+            var user = await GetUserSessionAsync(accessToken, context);
+            var boardId = await GetBoardIdAsync(parentId, context);
 
             var res = from tag in context.Tags.Where(t => !t.Deleted).OrderBy(t => t.CreationDate)
                       join sharedBoard in context.SharedBoards
@@ -69,8 +69,8 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> AsignTagToTaskAsync(string accessToken, Guid taskId, Guid tagId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            if (!await IsOwnerOfBoardAsync(user.UserId, taskId)) return JsonMap.FalseResult;
+            var user = await GetUserSessionAsync(accessToken, context);
+            if (!await IsOwnerOfBoardAsync(user.UserId, taskId, context)) return JsonMap.FalseResult;
             if (!await context.Tags.AnyAsync(t => t.Id == tagId && !t.Deleted)) return JsonMap.FalseResult;
             if (!await context.Tasks.AnyAsync(t => t.Id == taskId && !t.Deleted)) return JsonMap.FalseResult;
             if (await context.TagsList.AnyAsync(t => !t.Deleted && t.TagId == tagId && t.TaskId == taskId)) return JsonMap.FalseResult;
@@ -90,9 +90,8 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-        private async Task<List<TaskTags>> GetTaskTagListAsync(Guid taskId)
+        private async Task<List<TaskTags>> GetTaskTagListAsync(Guid taskId, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             var res = from tagList in context.TagsList.Where(t => t.TaskId == taskId && !t.Deleted).OrderBy(t => t.AsignDate)
                       select new
                       {
@@ -122,8 +121,8 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> RemoveTagAsync(string accessToken, Guid boardId, Guid tagId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, boardId);
+            var user = await GetUserSessionAsync(accessToken, context);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, boardId, context);
             var isUsing = await TagIsUsing(tagId);
 
             if (!isOwner || isUsing) return JsonMap.FalseResult; //todo: check
@@ -138,8 +137,8 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> EditTagAsync(string accessToken, Guid boardId, Guid tagId, string color)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, boardId);
+            var user = await GetUserSessionAsync(accessToken, context);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, boardId, context);
 
             if (!isOwner) return JsonMap.FalseResult;
 
@@ -154,8 +153,8 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> RemoveTagFromTaskAsync(string accessToken, Guid taskId, Guid taskTagId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            if (!(await IsOwnerOfBoardAsync(user.UserId, taskId))) return JsonMap.FalseResult;
+            var user = await GetUserSessionAsync(accessToken, context);
+            if (!(await IsOwnerOfBoardAsync(user.UserId, taskId, context))) return JsonMap.FalseResult;
 
             var taskTag = await context.TagsList.SingleOrDefaultAsync(t => t.Id == taskTagId && !t.Deleted);
             if (taskTag == null) return JsonMap.FalseResult;
@@ -214,9 +213,8 @@ namespace TaskPlusPlus.API.Services
             return tagIsUsingInTask || tagIsUsingInRole;
         }*/
 
-        private static async Task<bool> HasTagAccess(Guid boardId, Guid userId, Guid parentId)
+        private static async Task<bool> HasTagAccess(Guid boardId, Guid userId, Guid parentId, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             var hasRole = await context.RoleSessions.AnyAsync(r => !r.Demoted && r.BoardId == boardId && r.UserId == userId);
             if (!hasRole) return true;
 

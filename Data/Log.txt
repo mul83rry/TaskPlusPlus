@@ -5201,3 +5201,22 @@ ClientConnectionId:b41e7201-b54d-4794-8d34-c11e461a1ad3
 Error Number:4060,State:1,Class:11
 
 
+System.Net.Sockets.SocketException (995): The I/O operation has been aborted because of either a thread exit or an application request.
+   at System.Net.Sockets.Socket.GetException(SocketError error, Boolean wrapExceptionsInIOExceptions)
+   at System.Net.Sockets.Socket.CompleteAccept(Socket s, TaskSocketAsyncEventArgs`1 saea)
+   at System.Net.Sockets.Socket.<>c.<AcceptAsync>b__281_0(Object s, SocketAsyncEventArgs e)
+   at System.Net.Sockets.SocketAsyncEventArgs.OnCompleted(SocketAsyncEventArgs e)
+   at System.Net.Sockets.SocketAsyncEventArgs.OnCompletedInternal()
+   at System.Net.Sockets.SocketAsyncEventArgs.FinishOperationAsyncFailure(SocketError socketError, Int32 bytesTransferred, SocketFlags flags)
+   at System.Net.Sockets.SocketAsyncEventArgs.HandleCompletionPortCallbackError(UInt32 errorCode, UInt32 numBytes, NativeOverlapped* nativeOverlapped)
+   at System.Net.Sockets.SocketAsyncEventArgs.<>c.<.cctor>b__179_0(UInt32 errorCode, UInt32 numBytes, NativeOverlapped* nativeOverlapped)
+   at System.Threading.ThreadPoolBoundHandleOverlapped.CompletionCallback(UInt32 errorCode, UInt32 numBytes, NativeOverlapped* nativeOverlapped)
+   at System.Threading._IOCompletionCallback.PerformIOCompletionCallback(UInt32 errorCode, UInt32 numBytes, NativeOverlapped* pNativeOverlapped)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+
+System.IO.IOException: The process cannot access the file 'C:\Users\hosei\Documents\Projects\Web\TaskPlusPlus\Data\Log.txt' because it is being used by another process.
+   at System.IO.FileStream.ValidateFileHandle(SafeFileHandle fileHandle)
+
+
