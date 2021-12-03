@@ -14,10 +14,10 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> AddCommentAsync(string accessToken, string content, Guid parentId, Guid replyTo)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
-            if (await HaveAccessToTaskَAsync(user.UserId, parentId) == false) return JsonMap.FalseResult;
-            if (!isOwner && !(await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteComment))) return JsonMap.FalseResult;
+            var user = await GetUserSessionAsync(accessToken, context);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId, context);
+            if (await HaveAccessToTaskَAsync(user.UserId, parentId, context) == false) return JsonMap.FalseResult;
+            if (!isOwner && !(await HasPermissionsAsync(user.UserId, parentId, Permissions.WriteComment, context))) return JsonMap.FalseResult;
 
             var comment = new Comment()
             {
@@ -48,10 +48,10 @@ namespace TaskPlusPlus.API.Services
         public async Task<string> GetCommentsAsync(string accessToken, Guid parentId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
-            if (await HaveAccessToTaskَAsync(user.UserId, parentId) == false) return JsonMap.FalseResult.ToString();
-            if (!isOwner && !await HasPermissionsAsync(user.UserId, parentId, Permissions.ReadComment)) return JsonMap.FalseResult.ToString();
+            var user = await GetUserSessionAsync(accessToken, context);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId, context);
+            if (await HaveAccessToTaskَAsync(user.UserId, parentId, context) == false) return JsonMap.FalseResult.ToString();
+            if (!isOwner && !await HasPermissionsAsync(user.UserId, parentId, Permissions.ReadComment, context)) return JsonMap.FalseResult.ToString();
 
             var res = from comment in context.Comments
                       .Where(c => c.ParentId == parentId && !c.Deleted && c.EditId == c.Id).OrderBy(c => c.CreationDate)
@@ -68,16 +68,16 @@ namespace TaskPlusPlus.API.Services
             var jsonData = new JArray();
             foreach (var item in res)
             {
-                var replyInfo = await GetReplyInfo(item.ReplyTo, item.Id);
+                var replyInfo = await GetReplyInfo(item.ReplyTo, item.Id, context);
                 jsonData.Add(new JObject
                     {
                         { "Id", item.Id },
                         { "Content",  item.Text },
                         { "CreationAt",  item.CreationDate },
-                        { "Sender",(await GetUser(item.Sender)).FirstName },
+                        { "Sender",(await GetUser(item.Sender, context)).FirstName },
                         { "Reply", replyInfo.Content},
                         { "ReplySender", replyInfo.Sender},
-                        { "LastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName }
+                        { "LastModifiedBy", (await GetUser(item.LastModifiedBy, context)).FirstName }
                     });
             }
             return jsonData.ToString();
@@ -86,9 +86,9 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> EditCommentAsync(string accessToken, Guid parentId, Guid commentId, string text)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
-            if (await HaveAccessToTaskَAsync(user.UserId, parentId) == false) return JsonMap.FalseResult;
+            var user = await GetUserSessionAsync(accessToken, context);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId, context);
+            if (await HaveAccessToTaskَAsync(user.UserId, parentId, context) == false) return JsonMap.FalseResult;
 
             //find comment => create new comment => change edit id value to new comment id => save data base
 
@@ -124,9 +124,9 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> DeleteCommentAsync(string accessToken, Guid parentId, Guid commentId)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
-            if (await HaveAccessToTaskَAsync(user.UserId, parentId) == false) return JsonMap.FalseResult;
+            var user = await GetUserSessionAsync(accessToken, context);
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId, context);
+            if (await HaveAccessToTaskَAsync(user.UserId, parentId, context) == false) return JsonMap.FalseResult;
 
             var comment = await context.Comments.SingleOrDefaultAsync(c => c.Id == commentId && (c.Sender == user.UserId || isOwner));
 
@@ -140,9 +140,8 @@ namespace TaskPlusPlus.API.Services
         }
 
 
-        private async Task<ReplyInfo> GetReplyInfo(Guid replyId, Guid id)
+        private async Task<ReplyInfo> GetReplyInfo(Guid replyId, Guid id, TaskPlusPlusContext context)
         {
-            using var context = new TaskPlusPlusContext();
             ReplyInfo replyInfo = new ReplyInfo()
             {
                 Sender = string.Empty,
@@ -165,7 +164,7 @@ namespace TaskPlusPlus.API.Services
                 reply = await context.Comments.SingleAsync(c => !c.Deleted && c.Id == reply.EditId);
             }
 
-            replyInfo.Sender = (await GetUser(reply.Sender)).FirstName;
+            replyInfo.Sender = (await GetUser(reply.Sender, context)).FirstName;
             replyInfo.Content = reply.Text;
 
 

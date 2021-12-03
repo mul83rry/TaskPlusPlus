@@ -224,11 +224,11 @@ namespace TaskPlusPlus.API.Services
             GC.SuppressFinalize(this);
         }
         
-        private static async Task<bool> HasPermissionsAsync(Guid userId, Guid parentId, Permissions permissionType)
+        private static async Task<bool> HasPermissionsAsync(Guid userId, Guid parentId, Permissions permissionType, TaskPlusPlusContext context)
         {
-            var boardId = await GetBoardIdAsync(parentId);
-            var RoleAccess = await HasRoleAccess(boardId, userId, permissionType);
-            var tagAccess = await HasTagAccess(boardId, userId, parentId);
+            var boardId = await GetBoardIdAsync(parentId, context);
+            var RoleAccess = await HasRoleAccess(boardId, userId, permissionType, context);
+            var tagAccess = await HasTagAccess(boardId, userId, parentId, context);
 
             if (!RoleAccess || !tagAccess) return false;
 
@@ -238,7 +238,7 @@ namespace TaskPlusPlus.API.Services
         public async Task<string> GetRecentChangesAsync(string accessToken)
         {
             using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
+            var user = await GetUserSessionAsync(accessToken, context);
 
             var pendingFriendRequests = from friends in context.FriendLists.Where(f => f.Pending && f.To == user.UserId)
                                         select new
