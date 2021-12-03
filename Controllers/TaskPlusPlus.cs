@@ -33,6 +33,12 @@ namespace TaskPlusPlus.API.Controllers
         [Route(EventsKey.Signin)]
         public async Task<IActionResult> SigninAsync([FromBody] SignIn signIn) =>
             Ok((await repository.SigninAsync(signIn.PhoneNumber, signIn.OsVersion, signIn.DeviceType, signIn.BrowerVersion, signIn.Orientation)).ToString());
+        
+        
+        [HttpPost]
+        [Route("Signin0")]
+        public async Task<IActionResult> Signin0() =>
+            Ok("signin0");
 
         #endregion
 

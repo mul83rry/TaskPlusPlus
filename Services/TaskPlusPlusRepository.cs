@@ -266,7 +266,7 @@ namespace TaskPlusPlus.API.Services
             using var context = new TaskPlusPlusContext();
             try
             {
-                await context.Database.EnsureCreatedAsync();
+                await context.Database.EnsureCreatedAsync(); 
                 return true.ToString();
             }
             catch (Exception e)
