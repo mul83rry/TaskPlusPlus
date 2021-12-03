@@ -99,17 +99,24 @@ namespace TaskPlusPlus.API.Services
 
             foreach (var item in res)
             {
-                var tag = await context.Tags.SingleAsync(t => t.Id == item.TagId && t.BoardId == boardId && !t.Deleted);
+                try {
+                    if (!(await context.Tags.AnyAsync(t => t.Id == item.TagId && t.BoardId == boardId && !t.Deleted))) continue;
 
-                if (tag == null) continue;
+                    var tag = await context.Tags.SingleOrDefaultAsync(t => t.Id == item.TagId && t.BoardId == boardId && !t.Deleted);
 
-                jsonData.Add(new RoleTag()
-                {
-                    RoleTagId = item.Id,
-                    TagId = tag.Id,
-                    Caption = tag.Caption,
-                    Color = tag.BackgroundColor,
-                });
+
+                    jsonData.Add(new RoleTag()
+                    {
+                        RoleTagId = item.Id,
+                        TagId = tag.Id,
+                        Caption = tag.Caption,
+                        Color = tag.BackgroundColor,
+                    });
+                } 
+                catch {
+                    continue;
+                }
+               
             }
 
             return jsonData;
@@ -165,7 +172,7 @@ namespace TaskPlusPlus.API.Services
                     {"WriteComment",item.CommentWrite},
                     {"CompleteTask", item.TaskCompelete },
                     {"Color", item.BackgroundColor},
-                    {"Tags", JToken.FromObject(await GetRoleTags(boardId,item.Id))}
+                    {"Tags", JToken.FromObject((await GetRoleTags(boardId,item.Id)))}
                 });
             }
 

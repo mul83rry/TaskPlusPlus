@@ -103,7 +103,9 @@ namespace TaskPlusPlus.API.Services
             var data = new List<TaskTags>();
             foreach (var item in res)
             {
-                var tag = await context.Tags.SingleOrDefaultAsync(t => t.Id == item.TagId);
+                if (!(await context.Tags.AnyAsync(t => t.Id == item.TagId && !t.Deleted))) continue;
+
+                var tag = await context.Tags.SingleAsync(t => t.Id == item.TagId && !t.Deleted);
                 var listItem = new TaskTags()
                 {
                     TagListId = item.Id,
