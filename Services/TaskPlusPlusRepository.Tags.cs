@@ -90,32 +90,59 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-        private async Task<List<TaskTags>> GetTaskTagListAsync(Guid taskId)
+        private static async Task<List<TaskTags>> GetTaskTagListAsync(Guid taskId)
         {
-            using var context = new TaskPlusPlusContext();
-            var res = from tagList in context.TagsList.Where(t => t.TaskId == taskId && !t.Deleted).OrderBy(t => t.AsignDate)
-                      select new
-                      {
-                          tagList.Id,
-                          tagList.TagId,
-                      };
-
-            var data = new List<TaskTags>();
-            foreach (var item in res)
+            var ItemsFound = new List<bool>();
+            var tags = new List<Tuple<Guid, Guid>>();
+            using (var context = new TaskPlusPlusContext())
             {
-                if (!(await context.Tags.AnyAsync(t => t.Id == item.TagId && !t.Deleted))) continue;
-
-                var tag = await context.Tags.SingleAsync(t => t.Id == item.TagId && !t.Deleted);
-                var listItem = new TaskTags()
+                Logger.Log($"{920}\n");
+                var res = from tagList in context.TagsList.Where(t => t.TaskId == taskId && !t.Deleted).OrderBy(t => t.AsignDate)
+                          select new
+                          {
+                              tagList.Id,
+                              tagList.TagId,
+                          };
+                foreach (var item in res)
                 {
-                    TagListId = item.Id,
-                    TagId = item.TagId,
-                    Caption = tag.Caption,
-                    Color = tag.BackgroundColor
-                };
-                data.Add(listItem);
+                    tags.Add(new(item.Id, item.TagId));
+                }
+            }
+            using (var context = new TaskPlusPlusContext())
+            {
+                Logger.Log($"{921}\n");
+                foreach (var item in tags)
+                {
+                    ItemsFound.Add(await context.Tags.AnyAsync(t => t.Id == item.Item2 && !t.Deleted));
+                }
+                Logger.Log($"{922}\n");
             }
 
+            Logger.Log($"{923}\n");
+            var data = new List<TaskTags>();
+            using (var context = new TaskPlusPlusContext())
+            {
+                var index = 0;
+                foreach (var item in tags)
+                {
+                    Logger.Log($"{926}\n");
+                    if (!ItemsFound[index++]) continue;
+
+                    var tag = await context.Tags.SingleAsync(t => t.Id == item.Item2 && !t.Deleted);
+                    Logger.Log($"{927}\n");
+                    var listItem = new TaskTags()
+                    {
+                        TagListId = item.Item1,
+                        TagId = item.Item2,
+                        Caption = tag.Caption,
+                        Color = tag.BackgroundColor
+                    };
+                    Logger.Log($"{928}\n");
+                    data.Add(listItem);
+                    Logger.Log($"{929}\n");
+                }
+            }
+            Logger.Log($"{9210}\n");
             return data;
         }
 
@@ -169,20 +196,20 @@ namespace TaskPlusPlus.API.Services
         public async Task<bool> TagIsUsing(Guid tagId)
         {
             using var context = new TaskPlusPlusContext();
-            
+
             var tagIsUsingInTask = await (from tasksTag in context.TagsList.Where(t => t.TagId == tagId)
-                              join task in context.Tasks.Where(t => !t.Deleted) on tasksTag.TaskId equals task.Id
-                              select new
-                              {
-                                  tasksTag.Id,
-                              }).AnyAsync();
+                                          join task in context.Tasks.Where(t => !t.Deleted) on tasksTag.TaskId equals task.Id
+                                          select new
+                                          {
+                                              tasksTag.Id,
+                                          }).AnyAsync();
 
             var tagIsUsingInRole = await (from rolesTag in context.RolesTagList.Where(r => r.TagId == tagId)
-                               join role in context.Roles.Where(r => !r.Deleted) on rolesTag.RoleId equals role.Id
-                               select new
-                               {
-                                   rolesTag.RoleId,
-                               }).AnyAsync();
+                                          join role in context.Roles.Where(r => !r.Deleted) on rolesTag.RoleId equals role.Id
+                                          select new
+                                          {
+                                              rolesTag.RoleId,
+                                          }).AnyAsync();
 
             return tagIsUsingInTask || tagIsUsingInRole;
         }

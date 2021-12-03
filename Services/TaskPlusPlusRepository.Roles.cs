@@ -87,19 +87,23 @@ namespace TaskPlusPlus.API.Services
 
         private static async Task<List<RoleTag>> GetRoleTags(Guid boardId, Guid roleId)
         {
+            var counter = 0;
+
             var jsonData = new List<RoleTag>();
 
             using var context = new TaskPlusPlusContext();
-            var res = from roleTags in context.RolesTagList.Where(r => r.RoleId == roleId && !r.Removed).OrderBy(r => r.AsignDate)
-                      select new
-                      {
-                          roleTags.Id,
-                          roleTags.TagId
-                      };
+
+            var res = (from roleTags in context.RolesTagList.Where(r => r.RoleId == roleId && !r.Removed).OrderBy(r => r.AsignDate)
+                       select new
+                       {
+                           roleTags.Id,
+                           roleTags.TagId
+                       }).ToArray();
 
 
             foreach (var item in res)
             {
+                counter++;
                 try
                 {
                     if (!(await context.Tags.AnyAsync(t => t.Id == item.TagId && t.BoardId == boardId && !t.Deleted))) continue;
@@ -117,7 +121,7 @@ namespace TaskPlusPlus.API.Services
                 }
                 catch (Exception e)
                 {
-                    return new List<RoleTag>() { new RoleTag() { Caption = $"Error Line 120\n{e.Message}" } };
+                    return new List<RoleTag>() { new RoleTag() { Caption = $"Error Line 120\n{counter}\n{e.Message}" } };
                 }
 
             }
@@ -147,52 +151,54 @@ namespace TaskPlusPlus.API.Services
             var user = await GetUserSessionAsync(accessToken);
 
             var jsonData = new JArray();
-            using var context = new TaskPlusPlusContext();
-            try
+
+            using (var context = new TaskPlusPlusContext())
             {
                 if (!(await context.SharedBoards.AnyAsync(s => s.ShareTo == user.UserId && s.BoardId == boardId && !s.Deleted))) return jsonData.ToString();
-            }
-            catch (Exception e)
-            {
-                return $"Error In Line 157 {e.Message}";
-            }
 
-            var res = from roles in context.Roles.Where(r => r.BoardId == boardId && !r.Deleted).OrderBy(s => s.CreatedAt)
-                      select new
-                      {
-                          roles.Id,
-                          roles.Caption,
-                          roles.TaskRead,
-                          roles.TaskWrite,
-                          roles.CommentRead,
-                          roles.CommentWrite,
-                          roles.TaskCompelete,
-                          roles.BackgroundColor,
-                      };
+                var res = from roles in context.Roles.Where(r => r.BoardId == boardId && !r.Deleted).OrderBy(s => s.CreatedAt)
+                          select new
+                          {
+                              roles.Id,
+                              roles.Caption,
+                              roles.TaskRead,
+                              roles.TaskWrite,
+                              roles.CommentRead,
+                              roles.CommentWrite,
+                              roles.TaskCompelete,
+                              roles.BackgroundColor,
+                          };
 
-            var counter = 0;
-            foreach (var item in res)
-            {
-                counter++;
-                try
+                var counter = 0;
+                foreach (var item in res)
                 {
-                    jsonData.Add(new JObject
+                    counter++;
+                    try
                     {
-                        {"Id",item.Id},
-                        {"Caption",item.Caption},
-                        {"ReadTask",item.TaskRead},
-                        {"WriteTask",item.TaskWrite},
-                        {"ReadComment",item.CommentRead},
-                        {"WriteComment",item.CommentWrite},
-                        {"CompleteTask", item.TaskCompelete },
-                        {"Color", item.BackgroundColor},
-                        {"Tags", JToken.FromObject((await GetRoleTags(boardId,item.Id)))}
-                    });
+                        jsonData.Add(new JObject
+                        {
+                            {"Id",item.Id},
+                            { "Caption",item.Caption},
+                            { "ReadTask",item.TaskRead},
+                            { "WriteTask",item.TaskWrite},
+                            { "ReadComment",item.CommentRead},
+                            { "WriteComment",item.CommentWrite},
+                            { "CompleteTask", item.TaskCompelete },
+                            { "Color", item.BackgroundColor},
+                            { "Tags", string.Empty}
+                            //{ "Tags", JToken.FromObject((await GetRoleTags(boardId, item.Id)))}
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        return $"Error In Line 183\n{e.Message}";
+                    }
                 }
-                catch (Exception e)
-                {
-                    return $"Error In Line 183\n{e.Message}";
-                }
+            };
+
+            foreach (var item in jsonData)
+            {
+                item["Tags"] = JToken.FromObject(await GetRoleTags(boardId, Guid.Parse(item["Id"].ToString())));
             }
 
             return jsonData.ToString();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TaskPlusPlus.API.DbContexts;
@@ -11,46 +12,87 @@ namespace TaskPlusPlus.API.Services
     {
         public async Task<string> GetTasksAsync(string accessToken, Guid parentId)
         {
-            using var context = new TaskPlusPlusContext();
-            var user = await GetUserSessionAsync(accessToken);
-            var boardId = await GetBoardIdAsync(parentId);
-            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
-
             var jsonData = new JArray();
-            // todo: switch to signalR
+            var LastModifiedByUsers = new List<Guid>();
+
+            Logger.Log("\n\n\n\nStart");
+            var user = await GetUserSessionAsync(accessToken);
+            Logger.Log($"{1}\n");
+            var boardId = await GetBoardIdAsync(parentId);
+            Logger.Log($"{2}\n");
+            var isOwner = await IsOwnerOfBoardAsync(user.UserId, parentId);
+            Logger.Log($"{3}\n");
+
             if (!(await HaveAccessToTaskَAsync(user.UserId, boardId))) return jsonData.ToString();
+            Logger.Log($"{4}\n");
             if (!isOwner && !(await HasRoleAccess(boardId, user.UserId, Permissions.ReadTask))) return jsonData.ToString();
-
-            var res = from task in context.Tasks
-                      .Where(t => t.ParentId == parentId && !t.Deleted).OrderBy(t => t.CreationAt)
-                      select new
-                      {
-                          task.Id,
-                          task.Caption,
-                          task.Star,
-                          task.CreationAt,
-                          task.LastModifiedBy,
-                          task.Compeleted
-                      };
-
-            // todo: can be simplest
-            foreach (var item in res)
+            Logger.Log($"{5}\n");
+            var HasTagAccessList = new List<bool>();
+            Logger.Log($"{6}\n");
+            using (var context = new TaskPlusPlusContext())
             {
-                if (!isOwner && !(await HasTagAccess(boardId, user.UserId, item.Id)))
-                    continue;
+                var res = from task in context.Tasks
+                          .Where(t => t.ParentId == parentId && !t.Deleted).OrderBy(t => t.CreationAt)
+                          select new
+                          {
+                              task.Id
+                          };
+                foreach (var item in res)
+                {
+                    HasTagAccessList.Add(await HasTagAccess(boardId, user.UserId, item.Id));
+                }
+            }
+            Logger.Log($"{7}\n");
+            using (var context = new TaskPlusPlusContext())
+            {
+                var res = from task in context.Tasks
+                          .Where(t => t.ParentId == parentId && !t.Deleted).OrderBy(t => t.CreationAt)
+                          select new
+                          {
+                              task.Id,
+                              task.Caption,
+                              task.Star,
+                              task.CreationAt,
+                              task.LastModifiedBy,
+                              task.Compeleted
+                          };
 
-                jsonData.Add(new JObject
+                // todo: can be simplest
+                var counter = 0;
+                foreach (var item in res)
+                {
+                    if (!isOwner && !(HasTagAccessList[counter++]))
+                        continue;
+
+                    LastModifiedByUsers.Add(item.LastModifiedBy);
+                    jsonData.Add(new JObject
                     {
                         {"Id", item.Id },
                         {"Caption",  item.Caption },
                         {"Star",  item.Star },
                         {"CreationAt",  item.CreationAt },
-                        {"LastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName.ToString()},
-                        {"Tags", JToken.FromObject(await GetTaskTagListAsync(item.Id))},
+                        {"LastModifiedBy", string.Empty },
+                        {"Tags", string.Empty },
                         {"Compeleted" , item.Compeleted},
-                        {"SubTasksCount" , await GetChildsCount(item.Id)},
-                        {"SubCommentsCount" , await GetCommentsCount(item.Id)},
+                        {"SubTasksCount" , string.Empty},
+                        {"SubCommentsCount" , string.Empty}
                     });
+                }
+            }
+            Logger.Log($"{8}\n");
+            var index = 0;
+            foreach (var item in jsonData)
+            {
+                Guid id = Guid.Parse(item["Id"].ToString());
+                Logger.Log($"{9_1}\n");
+                item["LastModifiedBy"] = (await GetUser(LastModifiedByUsers[index])).FirstName;
+                Logger.Log($"{9_2}\n");
+                item["Tags"] = JToken.FromObject(await GetTaskTagListAsync(id));
+                Logger.Log($"{9_3}\n");
+                item["SubTasksCount"] = await GetChildsCount(id);
+                Logger.Log($"{9_4}\n");
+                item["SubCommentsCount"] = await GetCommentsCount(id);
+                Logger.Log($"{9_5}\n");
             }
             return jsonData.ToString();
         }
@@ -221,7 +263,7 @@ namespace TaskPlusPlus.API.Services
 
             return JsonMap.TrueResult;
         }
-        
+
         private async static Task<int> GetChildsCount(Guid parentId)
         {
             using var context = new TaskPlusPlusContext();
