@@ -33,6 +33,12 @@ namespace TaskPlusPlus.API.Controllers
         [Route(EventsKey.Signin)]
         public async Task<IActionResult> SigninAsync([FromBody] SignIn signIn) =>
             Ok((await repository.SigninAsync(signIn.PhoneNumber, signIn.OsVersion, signIn.DeviceType, signIn.BrowerVersion, signIn.Orientation)).ToString());
+        
+        
+        [HttpPost]
+        [Route("Signin0")]
+        public async Task<IActionResult> Signin0() =>
+            Ok("signin0");
 
         #endregion
 
@@ -278,9 +284,9 @@ namespace TaskPlusPlus.API.Controllers
             Ok((await repository.GetRecentChangesAsync(changes.AccessToken)).ToString());
 
         // todo: temp
-        [HttpPost]
+        [HttpGet]
         [Route("GenerateDatabase")]
-        public async Task<IActionResult> GenerateDatabase([FromBody] GetRecentChanges changes) =>
+        public async Task<IActionResult> GenerateDatabase() =>
             Ok((await repository.GenerateDBAsync()).ToString());
 
         #endregion
