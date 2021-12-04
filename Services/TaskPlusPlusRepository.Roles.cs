@@ -85,7 +85,7 @@ namespace TaskPlusPlus.API.Services
             return JsonMap.TrueResult;
         }
 
-        private static async Task<List<RoleTag>> GetRoleTags(Guid boardId, Guid roleId, TaskPlusPlusContext context)
+        private static async Task<List<RoleTag>> GetRoleTags(Guid boardId, Guid roleId)
         {
             var counter = 0;
 
