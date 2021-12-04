@@ -12,7 +12,7 @@ namespace TaskPlusPlus.API.Services
     {
         public async Task<string> GetSystemMessagesAsync(string accessToken)
         {
-            using var context = new TaskPlusPlusContext();
+            
             var user = await GetUserSessionAsync(accessToken);
 
             var res = from msg in context.Messages.Where(m => !m.Deleted && m.UserId == user.UserId).OrderBy(m => m.CreationAt)

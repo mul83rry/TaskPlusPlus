@@ -219,12 +219,23 @@ namespace TaskPlusPlus.API.Services
              await context.SaveChangesAsync();
          }*/
 
+        private TaskPlusPlusContext context;
+
+        public TaskPlusPlusRepository(TaskPlusPlusContext context) => this.context = context ?? throw new ArgumentNullException(nameof(context));
+
         public void Dispose()
         {
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposing || context == null) return;
+            context.Dispose();
+            context = null;
+        }
         
-        private static async Task<bool> HasPermissionsAsync(Guid userId, Guid parentId, Permissions permissionType)
+        private async Task<bool> HasPermissionsAsync(Guid userId, Guid parentId, Permissions permissionType)
         {
             var boardId = await GetBoardIdAsync(parentId);
             var RoleAccess = await HasRoleAccess(boardId, userId, permissionType);
@@ -237,7 +248,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<string> GetRecentChangesAsync(string accessToken)
         {
-            using var context = new TaskPlusPlusContext();
+            
             var user = await GetUserSessionAsync(accessToken);
 
             var pendingFriendRequests = from friends in context.FriendLists.Where(f => f.Pending && f.To == user.UserId)
@@ -263,7 +274,7 @@ namespace TaskPlusPlus.API.Services
 
         public async Task<string> GenerateDBAsync()
         {
-            using var context = new TaskPlusPlusContext();
+            
             try
             {
                 await context.Database.EnsureCreatedAsync();
