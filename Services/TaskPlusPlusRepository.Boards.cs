@@ -142,9 +142,7 @@ namespace TaskPlusPlus.API.Services
 
         private async Task<Guid> GetBoardIdAsync(Guid parentId)
         {            
-            var boardId = parentId;
-
-            parentId = await GetMainBoardId(parentId);
+            var boardId = await GetMainBoardId(parentId);
 
             return boardId;
         }
