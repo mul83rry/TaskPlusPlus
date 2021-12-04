@@ -15,5 +15,10 @@ internal static class Logger
         filePath = $"{path}{Path.DirectorySeparatorChar}Log.txt";
     }
 
-    public static void Log(string log) => File.AppendAllText(filePath, $"{log}\n");
+    public static void Log(string log)
+    {
+        using FileStream fs = new(filePath, FileMode.Append, FileAccess.Write);
+        using StreamWriter sw = new(fs);
+        sw.WriteLine($"{log}\n");
+    }
 }
