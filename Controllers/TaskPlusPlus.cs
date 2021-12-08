@@ -290,5 +290,12 @@ namespace TaskPlusPlus.API.Controllers
             Ok((await repository.GenerateDBAsync()).ToString());
 
         #endregion
+
+        #region Public
+        [HttpPost]
+        [Route(EventsKey.GetParentInformation)]
+        public async Task<IActionResult> GetParentInformationAsync([FromBody] GetParentInformation parentInfo) =>
+            Ok(await repository.GetParentInformationAsync(parentInfo.AccessToken,parentInfo.ParentId));
+        #endregion
     }
 }

@@ -101,7 +101,9 @@ namespace TaskPlusPlus.API.Services
         public async Task<JObject> ShareBoardAsync(string accessToken, Guid boardId, Guid[] shareToList)
         {            
             var user = await GetUserSessionAsync(accessToken);
-            var board = await context.Boards.SingleAsync(b => b.Id == boardId && b.CreatorId == user.UserId);
+            var board = await context.Boards.SingleOrDefaultAsync(b => b.Id == boardId && b.CreatorId == user.UserId);
+
+            if (board == null) return JsonMap.FalseResult;
 
             foreach (var item in shareToList)
             {

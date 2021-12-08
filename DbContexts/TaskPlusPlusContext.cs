@@ -11,11 +11,11 @@ namespace TaskPlusPlus.API.DbContexts
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (optionsBuilder.IsConfigured) return;
-#if (DEBUG)
-            optionsBuilder.UseSqlServer(@"Server=.;Database=TaskPlusPlusDB;Trusted_Connection=True;MultipleActiveResultSets = True");
-#else
+//#if (DEBUG)
+            //optionsBuilder.UseSqlServer(@"Server=.;Database=TaskPlusPlusDB;Trusted_Connection=True;MultipleActiveResultSets = True");
+//#else
             optionsBuilder.UseSqlServer(@"Server=.;Database=TaskPlusPlusDB;User Id=taskppir;Password=@yrS5j01JtVrmoob;MultipleActiveResultSets = True");
-#endif
+//#endif
         }
 
 

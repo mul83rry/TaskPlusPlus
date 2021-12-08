@@ -9,8 +9,11 @@ namespace TaskPlusPlus.API.Services
     {
         Task<string> GenerateDBAsync();
 
+        
+
         #region Public
         Task<string> GetRecentChangesAsync(string accessToken);
+        Task<string> GetParentInformationAsync(string accessToken, Guid parentId);
         #endregion
 
         #region Users

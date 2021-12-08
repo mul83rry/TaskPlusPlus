@@ -44,5 +44,6 @@
         public const string GetProfile = "getprofile";
         public const string GetSystemMessages = "getsystemmessages";
         public const string GetRecentChanges = "getrecentchanges";
+        public const string GetParentInformation = "getparentinfo";
     }
 }

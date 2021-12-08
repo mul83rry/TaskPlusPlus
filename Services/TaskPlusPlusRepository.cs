@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace TaskPlusPlus.API.Services
 {
@@ -284,6 +285,38 @@ namespace TaskPlusPlus.API.Services
             {
                 return e.Message;
             }
+        }
+
+        public async Task<string> GetParentInformationAsync(string accessToken,Guid parentId)
+        {
+            var user = await GetUserSessionAsync(accessToken);
+
+            var task = await context.Tasks.SingleOrDefaultAsync(t => t.Id == parentId && !t.Deleted);
+            if(task != null)
+            {
+                var JData = new JObject{
+                    new JProperty("ParentName", task.Caption ),
+                    new JProperty("CreationDate", task.CreationAt),
+                    new JProperty("Owner", (await GetUser(task.Creator)).FirstName),
+                };
+
+                if (user.UserId == task.Creator) JData["Owner"] = "You";
+
+
+                return JData.ToString();
+            }
+
+            var board = await context.Boards.SingleOrDefaultAsync(b => b.Id == parentId && !b.Deleted);
+
+            var JsonData = new JObject {
+                    new JProperty("ParentName", board.Caption ),
+                    new JProperty("CreationDate", board.CreationAt),
+                    new JProperty("Owner", (await GetUser(board.CreatorId)).FirstName),
+                };
+
+            if (user.UserId == board.CreatorId) JsonData["Owner"] = "You";
+
+            return JsonData.ToString();
         }
     }
 
