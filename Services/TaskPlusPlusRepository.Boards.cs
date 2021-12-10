@@ -39,7 +39,8 @@ namespace TaskPlusPlus.API.Services
                     {"CreationAt",  item.CreationAt },
                     {"ChildsCount", childs.Length },
                     {"CommentsCount", GetBoardsCommentsCount(childs)},
-                    {"EmployeesCount", await GetEmployeesCount(item.Id) }
+                    {"EmployeesCount", await GetEmployeesCount(item.Id) },
+                    {"IsOwner", await IsOwnerOfBoardAsync(user.UserId,item.Id)}
                 });
             }
 

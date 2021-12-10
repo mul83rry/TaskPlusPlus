@@ -50,6 +50,8 @@ namespace TaskPlusPlus.API.Services
                         {"Compeleted" , item.Compeleted},
                         {"SubTasksCount" , await GetChildsCount(item.Id)},
                         {"SubCommentsCount" , await GetCommentsCount(item.Id)},
+                        {"DeleteLicense", isOwner || await context.Tasks.AnyAsync(t => t.Id == item.Id && t.Creator == user.UserId)},
+                        {"EditLicense", isOwner || await HasPermissionsAsync(user.UserId, item.Id, Permissions.WriteTask)}
                     });
             }
             return jsonData.ToString();

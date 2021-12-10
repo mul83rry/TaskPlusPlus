@@ -77,7 +77,8 @@ namespace TaskPlusPlus.API.Services
                         { "Sender",(await GetUser(item.Sender)).FirstName },
                         { "Reply", replyInfo.Content},
                         { "ReplySender", replyInfo.Sender},
-                        { "LastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName }
+                        { "LastModifiedBy", (await GetUser(item.LastModifiedBy)).FirstName },
+                        { "DeleteEditLicense", isOwner || await context.Comments.AnyAsync(c => c.Id == item.Id && c.Sender == user.UserId)},
                     });
             }
             return jsonData.ToString();
